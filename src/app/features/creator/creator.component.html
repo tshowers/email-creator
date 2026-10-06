@@ -1,0 +1,345 @@
+<!-- Email Creator (design_handoff_todd_tools 7a signed out, 7b empty, 7c email
+     made, 7d phone). Yellow. -->
+<div class="app" [class.app--panel]="!!auth.user() && hasEmails()">
+  <header class="topbar">
+    <a class="brand" routerLink="/">
+      <span class="brand-mark"><img src="todd-icon.png" alt="" /></span>
+      <span class="brand-name"><span class="brand-todd">TODD </span><span class="brand-product">Email Creator</span></span>
+    </a>
+
+    <div class="topbar-actions">
+      @if (auth.user()) {
+        @if (usage(); as u) {
+          <span class="usage" [class.usage-empty]="u.remaining === 0" title="Resets at midnight Pacific time">
+            <span class="long">{{ u.remaining }} of {{ u.limit }} left today</span><span class="short">{{ u.remaining }} left</span>
+          </span>
+        }
+        @if (messages().length) {
+          <button type="button" class="pill" (click)="startOver()" [disabled]="busy()">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg><span class="long">New email</span>
+          </button>
+        }
+      } @else if (auth.user() === null) {
+        <button type="button" class="pill pill--text" (click)="auth.signIn()">Sign in</button>
+      }
+      <app-platform-menu [isLoggedIn]="!!auth.user()" [userName]="auth.user()?.displayName || ''" [userEmail]="auth.user()?.email || ''" (signIn)="auth.signIn()" (signOut)="signOut()" />
+    </div>
+  </header>
+
+  @if (auth.user() === undefined) {
+    <div class="loading-page"><span class="dots"><i></i><i></i><i></i></span></div>
+  } @else if (!auth.user()) {
+    <!-- 7a: signed out -->
+    <main class="hero">
+      <div class="hero-copy">
+        <span class="kicker">10 emails a day, free with TODD</span>
+        <h1>What email should we create?</h1>
+        <p>
+          Tell TODD about the email you need, from a marketing campaign or newsletter to a simple business email.
+          Attach your logo or any images to include. TODD writes the copy, designs the layout, and gives you
+          HTML ready for Mailchimp, Constant Contact, or your own inbox.
+        </p>
+        <div class="hero-actions">
+          <button type="button" class="primary big" (click)="auth.signIn()">Sign in with TODD</button>
+          <a class="pill big" routerLink="/help">How it works</a>
+        </div>
+        <p class="fine-print">Nothing is saved. Download the emails you want to keep before you leave.</p>
+        <p class="tt-made-by"><a href="https://todd.taliferro.tech" target="_blank" rel="noopener"><span class="tt-made-by__todd"><img src="todd-icon.png" alt="" /></span>Powered by <strong>TODD</strong></a><i aria-hidden="true"></i><a href="https://find.taliferro.tech" target="_blank" rel="noopener">Also from us <span class="um-logo" data-app="find" aria-hidden="true"></span><strong>Find</strong></a></p>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <!-- A drawn stand-in for a generated email (not real output). -->
+        <div class="sample">
+          <div class="sample-head"><b>RISE &amp; CRUMB</b><span>October</span></div>
+          <div class="sample-photo">featured photo</div>
+          <div class="sample-body">
+            <strong>Cardamom morning buns are back</strong>
+            <span>Baked every morning at 7 until they sell out.</span>
+            <span class="sample-coupon">10% off with code OCT10</span>
+            <span class="sample-cta">Order ahead</span>
+          </div>
+        </div>
+      </div>
+    </main>
+    <footer class="page-foot">
+      <span><a routerLink="/help">Help</a><i aria-hidden="true">·</i><a routerLink="/about">About</a></span>
+      <span>Taliferro Tech, LLC</span>
+    </footer>
+  } @else {
+    <div class="work">
+      <section class="chat">
+        <main class="thread" #scroller>
+          <div class="thread-inner">
+            @if (!messages().length) {
+              <!-- 7b: signed in, nothing made yet -->
+              <section class="intro">
+                <span class="intro-mark"><span class="um-glyph" data-key="email-creator"></span></span>
+                <h1>What email should we create?</h1>
+                <p>Tell TODD about the email you need. Attach your logo or any images to include.</p>
+                <span class="label">Try one</span>
+                <div class="suggestions">
+                  @for (suggestion of suggestions; track suggestion) {
+                    <button type="button" class="suggestion" (click)="useSuggestion(suggestion)">
+                      <span>{{ suggestion }}</span>
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10M7 17 17 7" /></svg>
+                    </button>
+                  }
+                </div>
+              </section>
+            } @else {
+              @for (message of messages(); track $index; let i = $index) {
+                @if (message.role === 'user') {
+                  <div class="row row-user">
+                    <div class="user-message">
+                      @if (message.images.length) {
+                        <div class="user-images">
+                          @for (image of message.images; track image.id) {
+                            <span class="user-image"><img [src]="image.thumbnail" [alt]="image.name" /><span>{{ image.name }}</span></span>
+                          }
+                        </div>
+                      }
+                      @if (message.text) {
+                        <div class="bubble">{{ message.text }}</div>
+                      }
+                    </div>
+                  </div>
+                } @else {
+                  <div class="row row-todd">
+                    <span class="avatar"><img src="todd-icon.png" alt="TODD" /></span>
+                    <div class="todd-message">
+                      <p class="todd-text">{{ message.text }}</p>
+
+                      @if (message.generating) {
+                        <div class="email-placeholder">
+                          <span class="dots small"><i></i><i></i><i></i></span>
+                          <span>Writing and designing your email… this can take a minute or two.</span>
+                        </div>
+                      }
+
+                      @if (message.email; as email) {
+                        <!-- Artifact link card: shows this version in the panel -->
+                        <button type="button" class="artifact" [class.is-on]="selectedEmail() === email" (click)="showEmail(email)">
+                          <span class="um-glyph" data-key="email-creator" aria-hidden="true"></span>
+                          <span class="artifact-text">
+                            <strong>{{ email.subject }}</strong>
+                            <small>{{ selectedEmail() === email ? 'Showing on the right' : 'Show this version' }}</small>
+                          </span>
+                          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>
+                        </button>
+                        @if (isNewestEmail(email) && !busy() && !noneLeft()) {
+                          <div class="quick">
+                            @for (change of quickChanges; track change) {
+                              <button type="button" (click)="requestChange(change)">{{ change }}</button>
+                            }
+                          </div>
+                        }
+                      }
+
+                      @if (message.error) {
+                        <div class="error">
+                          <span>{{ message.error }}</span>
+                          @if (usage()?.remaining !== 0) {
+                            <button type="button" class="pill" (click)="generate(i)" [disabled]="busy()">Try again</button>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              }
+
+              @if (thinking()) {
+                <div class="row row-todd">
+                  <span class="avatar"><img src="todd-icon.png" alt="TODD" /></span>
+                  <span class="dots" aria-label="TODD is thinking"><i></i><i></i><i></i></span>
+                </div>
+              }
+            }
+          </div>
+        </main>
+
+        <footer class="composer-area">
+          @if (notice()) {
+            <div class="notice" role="status">
+              <span>{{ notice() }}</span>
+              @if (notice().startsWith('Your session expired')) {
+                <button type="button" class="pill" (click)="auth.signIn()">Sign in</button>
+              }
+              <button type="button" class="dismiss" (click)="notice.set('')" aria-label="Dismiss">×</button>
+            </div>
+          }
+
+          <div class="composer">
+            @if (attachments().length) {
+              <div class="attachments">
+                @for (image of attachments(); track image.id) {
+                  <div class="attachment">
+                    <img [src]="image.thumbnail" [alt]="image.name" />
+                    <button type="button" (click)="removeAttachment(image.id)" [attr.aria-label]="'Remove ' + image.name">×</button>
+                  </div>
+                }
+              </div>
+            }
+
+            <textarea
+              #composer
+              rows="1"
+              [placeholder]="noneLeft() ? 'No emails left today' : (hasEmails() ? 'Ask for changes…' : 'Describe the email you want…')"
+              [disabled]="noneLeft()"
+              [ngModel]="draft()"
+              (ngModelChange)="draft.set($event)"
+              (input)="autoGrow(composer)"
+              (keydown)="onComposerKeydown($event)"
+            ></textarea>
+
+            <div class="composer-actions">
+              <button type="button" class="attach" (click)="openFilePicker()" title="Attach a logo or images">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg><span>Logo or images</span>
+              </button>
+              <span class="hint">Enter to send</span>
+              <button type="button" class="send" [class.is-ready]="canSend() && !noneLeft()" (click)="send()" [disabled]="!canSend() || noneLeft()" aria-label="Send">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6" /></svg>
+              </button>
+            </div>
+            <input #fileInput type="file" [accept]="acceptedTypes" multiple hidden (change)="onFilesPicked(fileInput)" />
+          </div>
+          @if (!hasEmails()) {
+            <p class="fine-print">Nothing is saved. Download the emails you want to keep before you leave.</p>
+          }
+        </footer>
+      </section>
+
+      @if (selectedEmail(); as email) {
+        <!-- 7c: the selected email -->
+        <aside class="panel" aria-label="Email preview">
+          <div class="toolbar">
+            <div class="seg" role="group" aria-label="View">
+              <button type="button" [class.active]="panelView() === 'preview'" (click)="panelView.set('preview')">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>Preview
+              </button>
+              <button type="button" [class.active]="panelView() === 'html'" (click)="panelView.set('html')">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6" /></svg>HTML
+              </button>
+            </div>
+            @if (panelView() === 'preview') {
+              <div class="seg" role="group" aria-label="Preview width">
+                <button type="button" [class.active]="previewWidth(email) === 'desktop'" (click)="setPreviewWidth(email, 'desktop', frame)" aria-label="Desktop" title="Desktop">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2" /><path d="M8 21h8M12 17v4" /></svg>
+                </button>
+                <button type="button" [class.active]="previewWidth(email) === 'mobile'" (click)="setPreviewWidth(email, 'mobile', frame)" aria-label="Mobile" title="Mobile">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="20" x="5" y="2" rx="2" /><path d="M12 18h.01" /></svg>
+                </button>
+              </div>
+            }
+            <span class="toolbar-gap"></span>
+            <button type="button" class="pill pill--bg" (click)="copyHtml(email)" [disabled]="!!exporting()">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg>Copy HTML
+            </button>
+            <button type="button" class="primary" (click)="downloadPrimary(email)" [disabled]="!!exporting()">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>Download HTML
+            </button>
+          </div>
+
+          <dl class="email-meta">
+            <dt>Subject</dt><dd>{{ email.subject }}</dd>
+            @if (email.preheader) {
+              <dt>Preview text</dt><dd>{{ email.preheader }}</dd>
+            }
+          </dl>
+
+          <div class="panel-scroll">
+            @if (email.notes.length) {
+              <div class="notes">
+                <strong>Before you send</strong>
+                <ul>
+                  @for (note of email.notes; track note) {
+                    <li>{{ note }}</li>
+                  }
+                </ul>
+              </div>
+            }
+
+            <div class="preview-stage" [hidden]="panelView() !== 'preview'">
+              <iframe
+                #frame
+                class="preview-frame"
+                [class.mobile]="previewWidth(email) === 'mobile'"
+                title="Email preview"
+                sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+                [srcdoc]="email.preview"
+                (load)="fitFrame(frame)"
+              ></iframe>
+            </div>
+            @if (panelView() === 'html') {
+              <pre class="code">{{ email.html }}</pre>
+            }
+
+            <div class="more">
+              @if (exporting() === email.id) {
+                <span class="dots small" aria-label="Preparing download"><i></i><i></i><i></i></span>
+              }
+              @if (usesImages(email)) {
+                <p class="more-note">Download HTML hosts the images with TODD for 30 days, so it works pasted into any email tool.</p>
+                <div class="more-row">
+                  <button type="button" class="pill pill--bg" (click)="downloadZip(email)" [disabled]="!!exporting()">Download .zip <small>HTML plus an images folder</small></button>
+                  <button type="button" class="pill pill--bg" (click)="downloadSingleFile(email)" [disabled]="!!exporting()">Single file <small>Images built in</small></button>
+                </div>
+              }
+            </div>
+
+            <div class="send-out" aria-label="Send with Outreach">
+              <strong>Send it with Outreach</strong>
+              <div class="send-choices">
+                <button type="button" class="export" (click)="openSend(email, 'catalyst')" [disabled]="sendPanel()?.working">
+                  <span class="export-title">Send to many - Catalyst</span>
+                  <span class="export-detail">Personalized for each contact ({{ '{' }}{{ '{' }}firstName{{ '}' }}{{ '}' }}, company...), paced and tracked.</span>
+                </button>
+                <button type="button" class="export" (click)="openSend(email, 'composer')" [disabled]="sendPanel()?.working">
+                  <span class="export-title">Send to one - Email Composer</span>
+                  <span class="export-detail">One recipient, reviewed before it goes.</span>
+                </button>
+              </div>
+              @if (sendPanel(); as panel) {
+                @if (panel.emailId === email.id) {
+                  <div class="send-panel">
+                    @if (panel.canSend === null && panel.working) {
+                      <span class="dots small" aria-label="Checking"><i></i><i></i><i></i></span>
+                    } @else if (panel.canSend === false) {
+                      <p>Sending needs the Outreach app subscription. Downloading stays free.</p>
+                      <a class="button-link" [href]="pricingUrl" target="_blank" rel="noopener">See Outreach pricing</a>
+                    } @else if (panel.openUrl) {
+                      <p>Ready. Your name, title and company are filled in{{ panel.target === 'catalyst' ? '; each contact gets their own name and company' : '' }}.</p>
+                      <a class="button-link primary" [href]="panel.openUrl" target="_blank" rel="noopener" (click)="closeSend()">Open {{ targetNames[panel.target] }}</a>
+                    } @else if (panel.canSend) {
+                      @if (panel.fillIns.length) {
+                        <p>Fill these in first{{ panel.target === 'catalyst' ? ' - they go to every recipient as written' : '' }}:</p>
+                        @for (item of panel.fillIns; track item.token) {
+                          <label class="fill">
+                            <span>{{ item.label }}</span>
+                            <input type="text" [ngModel]="panel.values[item.token] || ''" (ngModelChange)="setFill(item.token, $event)" [name]="'fill-' + item.token" />
+                          </label>
+                        }
+                      }
+                      <div class="send-actions">
+                        <button type="button" class="primary" (click)="prepareSend(email)" [disabled]="panel.working || !fillsComplete(panel)">
+                          {{ panel.working ? 'Preparing...' : 'Continue to ' + targetNames[panel.target] }}
+                        </button>
+                        <button type="button" class="pill" (click)="closeSend()" [disabled]="panel.working">Cancel</button>
+                      </div>
+                    }
+                    @if (panel.error) {
+                      <p class="send-error" role="alert">{{ panel.error }}</p>
+                    }
+                  </div>
+                }
+              }
+            </div>
+          </div>
+        </aside>
+      }
+    </div>
+  }
+
+  @if (dragging()) {
+    <div class="drop-overlay"><div>Drop images for TODD to use</div></div>
+  }
+</div>

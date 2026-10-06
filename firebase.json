@@ -1,0 +1,13 @@
+{
+  "hosting": {
+    "site": "todd-email-creator",
+    "public": "dist/email-creator/browser",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.csr.html"
+      }
+    ]
+  }
+}

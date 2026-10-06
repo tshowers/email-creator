@@ -1,0 +1,97 @@
+<!-- SYNCED FROM taliferro-ui/product-pages-component - edit it there. -->
+<div class="pp" [attr.data-tint]="content.tint" [class.pp--global-menu]="!config.ownMenu">
+  <header class="pp-head">
+    <a class="pp-brand" [routerLink]="config.openRoute">
+      <span class="pp-logo" [class.pp-logo--fill]="config.logoFill"><img [src]="config.logo" alt="" /></span>
+      <span class="pp-title">
+        <ng-container *ngIf="content.brand"><span class="pp-title__brand">{{ content.brand }} </span><span class="pp-title__name">{{ content.name }}</span></ng-container>
+        <ng-container *ngIf="!content.brand">{{ content.name }}</ng-container>
+      </span>
+    </a>
+    <div class="pp-head__actions">
+      <a class="pp-open" [routerLink]="config.openRoute">Open {{ content.name }}</a>
+      <app-platform-menu *ngIf="config.ownMenu"></app-platform-menu>
+    </div>
+  </header>
+
+  <!-- Phone: Help / About as a segmented control -->
+  <nav class="pp-tabs" aria-label="Help and About">
+    <a routerLink="/help" [class.is-on]="current === 'help'">Help</a>
+    <a routerLink="/about" [class.is-on]="current === 'about'">About</a>
+  </nav>
+
+  <div class="pp-body" [class.pp-body--about]="current === 'about'">
+    <nav class="pp-nav" aria-label="Help and About">
+      <a routerLink="/help" [class.is-on]="current === 'help'" [attr.aria-current]="current === 'help' ? 'page' : null">
+        <span [innerHTML]="icon('help')" aria-hidden="true"></span>Help
+      </a>
+      <a routerLink="/about" [class.is-on]="current === 'about'" [attr.aria-current]="current === 'about' ? 'page' : null">
+        <span [innerHTML]="icon('info')" aria-hidden="true"></span>About
+      </a>
+    </nav>
+
+    <main class="pp-main">
+      <ng-container *ngIf="current === 'help'; else about">
+        <h1 class="pp-h1">Help</h1>
+        <p class="pp-sub">How to use {{ content.name }}.</p>
+
+        <h2 class="pp-label">Getting started</h2>
+        <ol class="pp-steps">
+          <li *ngFor="let step of content.steps; let i = index"><span class="pp-num">{{ i + 1 }}</span><span>{{ step }}</span></li>
+        </ol>
+
+        <h2 class="pp-label">Questions</h2>
+        <div class="pp-faq">
+          <article *ngFor="let item of content.faq">
+            <h3>{{ item[0] }}</h3>
+            <p>{{ item[1] }}</p>
+          </article>
+        </div>
+      </ng-container>
+
+      <ng-template #about>
+        <div class="pp-hero">
+          <span class="pp-chip" aria-hidden="true"><span class="um-glyph" [attr.data-key]="content.key"></span></span>
+          <div>
+            <h1 class="pp-h1">{{ content.name }}</h1>
+            <p class="pp-sub">{{ content.tagline }}</p>
+          </div>
+        </div>
+        <p class="pp-about">{{ content.about }}</p>
+        <div class="pp-does">
+          <article *ngFor="let item of content.does">
+            <h3>{{ item[0] }}</h3>
+            <p>{{ item[1] }}</p>
+          </article>
+        </div>
+        <a *ngIf="content.key !== 'ask-todd'" class="pp-todd" href="https://ask.taliferro.tech">
+          <span class="pp-todd__mark" aria-hidden="true"><span class="um-glyph" data-key="ask-todd"></span></span>
+          <span><strong>Part of TODD.</strong> TODD is a Momentum System. It turns scattered information into clear next moves.</span>
+          <span class="pp-todd__go">Ask TODD <span [innerHTML]="icon('arrow-up-right', 16)" aria-hidden="true"></span></span>
+        </a>
+      </ng-template>
+
+    </main>
+
+    <aside class="pp-aside" *ngIf="current === 'help'">
+      <div class="pp-stuck">
+        <h2>Still stuck?</h2>
+        <p>A person at Taliferro Tech will answer.</p>
+        <a [href]="'mailto:' + company.email">{{ company.email }}</a>
+        <a [href]="'tel:' + company.phone">{{ company.phone }}</a>
+      </div>
+    </aside>
+
+    <!-- The app's own extra content, below the standard sections, full width -->
+    <div class="pp-extra"><ng-content></ng-content></div>
+  </div>
+
+  <footer class="pp-foot">
+    <span class="pp-foot__company"><strong>{{ company.name }}</strong><span>{{ company.address }}</span></span>
+    <span class="pp-foot__legal">
+      <a *ngIf="terms" [href]="terms.url" target="_blank" rel="noopener">{{ terms.label }}</a>
+      <a *ngIf="privacy" [href]="privacy.url" target="_blank" rel="noopener">{{ privacy.label }}</a>
+      <span *ngIf="version">v{{ version }}</span>
+    </span>
+  </footer>
+</div>

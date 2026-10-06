@@ -1,0 +1,32 @@
+@import "@taliferro/ui/styles/tokens.css";
+@import "@taliferro/ui/styles/controls.css";
+@import "@taliferro/ui/styles/universal-menu.css";
+@import "@taliferro/ui/styles/product-pages.css";
+
+/* Email Creator uses the Find family tokens (tokens.css); they handle dark
+ * mode. The old --ec-* names point at them for anything that still uses one. */
+:root {
+  --ec-bg: var(--bg);
+  --ec-surface: var(--surface);
+  --ec-text: var(--text);
+  --ec-muted: var(--muted);
+  --ec-border: var(--surface2);
+  --ec-primary: var(--blue);
+  --ec-danger: var(--danger);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}

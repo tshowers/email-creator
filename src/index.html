@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>TODD Email Creator</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Chat with TODD to draft and design marketing and business emails. Attach a logo or images and download ready-to-send HTML.">
+  <link rel="icon" type="image/png" href="todd-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Google Analytics 4 / Email Creator web stream -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    // No GA on localhost: local dev and the Cypress runs in deploy.sh otherwise
+    // show up in GA as thousands of one-second "users".
+    if (!/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) {
+      var gaTag = document.createElement('script');
+      gaTag.async = true;
+      gaTag.src = 'https://www.googletagmanager.com/gtag/js?id=G-SCN91DGXEX';
+      document.head.appendChild(gaTag);
+      gtag('js', new Date());
+      gtag('config', 'G-SCN91DGXEX');
+    }
+  </script>
+</head>
+<body>
+  <app-root></app-root>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!-- SYNCED FROM taliferro-ui/menu-component - edit it there. -->
+<div class="um">
+  <button *ngIf="showTrigger" type="button" class="um-trigger platform-menu-trigger" (click)="open()" [attr.aria-expanded]="isOpen" aria-haspopup="dialog">
+    <span [innerHTML]="icon('menu', 18)"></span>Menu
+  </button>
+
+  <!-- Moved to <body> while open so no parent stacking context can cover it. -->
+  <div class="um um-layer" #layer *ngIf="isOpen">
+  <div class="um-backdrop" (click)="close()" role="presentation">
+    <section class="um-panel" role="dialog" aria-modal="true" [attr.aria-label]="config.name + ' menu'" (click)="$event.stopPropagation()">
+      <header class="um-head">
+        <a class="um-brand" [routerLink]="'/'" (click)="close()">
+          <span class="um-logo" [attr.data-app]="config.app" aria-hidden="true"></span>
+          <span>{{ config.name }}</span>
+        </a>
+        <label class="um-search">
+          <span [innerHTML]="icon('search', 18)"></span>
+          <input #search type="search" [(ngModel)]="query" (keydown.enter)="openFirstMatch()" placeholder="Search products and pages" aria-label="Search products and pages" autocomplete="off" />
+          <span class="um-kbd">⌘K</span>
+        </label>
+        <button type="button" class="um-close" (click)="close()" aria-label="Close menu">
+          <span [innerHTML]="icon('close', 18)" aria-hidden="true"></span><span class="um-close__label">Close</span>
+        </button>
+      </header>
+
+      <div class="um-body" [class.um-body--no-app]="!hasAppColumn">
+        <!-- 1 · This app -->
+        <nav class="um-app" *ngIf="hasAppColumn" [attr.aria-label]="config.name">
+          <span class="um-eyebrow">{{ appTitle }}</span>
+          <div class="um-rows">
+            <ng-container *ngFor="let item of appItems; trackBy: trackByLabel">
+              <ng-container *ngTemplateOutlet="row; context: { $implicit: item }"></ng-container>
+            </ng-container>
+            <div class="um-divider" *ngIf="appItems.length && secondaryItems.length"></div>
+            <ng-container *ngFor="let item of secondaryItems; trackBy: trackByLabel">
+              <ng-container *ngTemplateOutlet="row; context: { $implicit: item }"></ng-container>
+            </ng-container>
+          </div>
+        </nav>
+
+        <!-- 2 · Products -->
+        <section class="um-products" aria-label="Products" *ngIf="visibleProducts.length || !query">
+          <div class="um-section-head">
+            <span class="um-eyebrow">Products</span>
+            <small>Opens in this tab</small>
+          </div>
+          <div class="um-tiles">
+            <a *ngFor="let product of visibleProducts; trackBy: trackByLabel" class="um-tile" [href]="product.url" (click)="close()">
+              <span class="um-chip" [attr.data-tint]="product.tint"><span class="um-glyph" [attr.data-key]="product.key"></span></span>
+              <span>{{ product.label }}</span>
+            </a>
+          </div>
+          <p class="um-empty" *ngIf="noResults">Nothing matches “{{ query }}”.</p>
+        </section>
+
+        <!-- 3 · Account: global, on todd.taliferro.tech -->
+        <section class="um-account" aria-label="Account">
+          <span class="um-eyebrow">Account</span>
+          <div class="um-card">
+            <ng-container *ngIf="isLoggedIn; else signedOut">
+              <ng-container *ngIf="userName || userEmail">
+                <a *ngIf="config.profileRoute; else toddProfile" class="um-person" [routerLink]="config.profileRoute" title="Your profile" (click)="close()">
+                  <ng-container *ngTemplateOutlet="person"></ng-container>
+                </a>
+                <ng-template #toddProfile>
+                  <a class="um-person" [href]="toddProfileUrl" title="Your profile" (click)="close()">
+                    <ng-container *ngTemplateOutlet="person"></ng-container>
+                  </a>
+                </ng-template>
+                <ng-template #person>
+                  <span class="um-avatar" aria-hidden="true">{{ initials }}</span>
+                  <span class="um-person__text">
+                    <strong>{{ userName || userEmail }}</strong>
+                    <small *ngIf="userName && userEmail">{{ userEmail }}</small>
+                  </span>
+                  <span class="um-person__go" [innerHTML]="icon('arrow-up-right', 14)" aria-hidden="true"></span>
+                </ng-template>
+              </ng-container>
+              <div class="um-rows">
+                <ng-container *ngFor="let item of visibleAccount; trackBy: trackByLabel">
+                  <ng-container *ngTemplateOutlet="row; context: { $implicit: item }"></ng-container>
+                </ng-container>
+                <button type="button" class="um-row" (click)="onSignOut()">
+                  <span [innerHTML]="icon('log-out')" class="um-row__icon" aria-hidden="true"></span><span>Sign out</span>
+                </button>
+              </div>
+            </ng-container>
+            <ng-template #signedOut>
+              <button type="button" class="um-signin" (click)="onSignIn()">
+                <span [innerHTML]="icon('log-in', 18)" aria-hidden="true"></span>Sign in
+              </button>
+            </ng-template>
+          </div>
+        </section>
+      </div>
+
+      <footer class="um-foot">
+        <span class="um-foot__company">
+          <strong>{{ company.name }}</strong>
+          <a [href]="'mailto:' + company.email">{{ company.email }}</a>
+          <a [href]="'tel:' + company.phone">{{ company.phone }}</a>
+          <span>{{ company.address }}</span>
+        </span>
+        <span class="um-foot__legal">
+          <a *ngFor="let link of company.links" [href]="link.url" target="_blank" rel="noopener">{{ link.label }}</a>
+          <span *ngIf="version">v{{ version }}</span>
+        </span>
+      </footer>
+    </section>
+  </div>
+  </div>
+</div>
+
+<ng-template #row let-item>
+  <a *ngIf="item.route" class="um-row" [routerLink]="item.route" routerLinkActive="is-current" [routerLinkActiveOptions]="{ exact: item.route === '/' }" (click)="close()">
+    <span class="um-row__icon" [innerHTML]="icon(item.icon)" aria-hidden="true"></span><span>{{ item.label }}</span>
+    <span class="um-ext" *ngIf="item.external" [innerHTML]="icon('arrow-up-right', 14)" aria-hidden="true"></span>
+  </a>
+  <a *ngIf="!item.route" class="um-row" [href]="item.url" [attr.target]="item.external ? '_blank' : null" [attr.rel]="item.external ? 'noopener' : null" (click)="close()">
+    <span class="um-row__icon" [innerHTML]="icon(item.icon)" aria-hidden="true"></span><span>{{ item.label }}</span>
+    <span class="um-ext" *ngIf="item.external" [innerHTML]="icon('arrow-up-right', 14)" aria-hidden="true"></span>
+  </a>
+</ng-template>

@@ -1,0 +1,32 @@
+<!-- The shared Help template (taliferro-ui); Email Creator's guide follows it. -->
+<app-product-pages page="help">
+  <section class="pp-section" aria-labelledby="ec-tips-title">
+    <p class="pp-kicker">Writing a good request</p>
+    <h2 id="ec-tips-title">Get a better email on the first try</h2>
+    <div class="pp-cards">
+      @for (t of tips; track t.title) {
+        <article><h3>{{ t.title }}</h3><p>{{ t.copy }}</p></article>
+      }
+    </div>
+  </section>
+
+  <section class="pp-section" aria-labelledby="ec-formats-title">
+    <p class="pp-kicker">Taking it with you</p>
+    <h2 id="ec-formats-title">Download formats</h2>
+    <dl class="pp-rows">
+      @for (f of formats; track f.name) {
+        <div><dt>{{ f.name }}</dt><dd>{{ f.copy }}</dd></div>
+      }
+    </dl>
+  </section>
+
+  <section class="pp-section" aria-labelledby="ec-faq-title">
+    <p class="pp-kicker">More questions</p>
+    <h2 id="ec-faq-title">What people ask about Email Creator</h2>
+    <div class="pp-cards">
+      @for (item of questions; track item.q) {
+        <article><h3>{{ item.q }}</h3><p>{{ item.a }}</p></article>
+      }
+    </div>
+  </section>
+</app-product-pages>
