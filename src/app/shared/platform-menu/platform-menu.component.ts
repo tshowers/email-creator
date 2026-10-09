@@ -9,7 +9,7 @@ import { Router, RouterModule } from '@angular/router';
 import packageJson from '../../../../package.json';
 
 import {
-  MENU_COMPANY, MENU_TODD_PROFILE_URL, MenuIconName, MenuSection, MenuLink, MenuProduct, menuAccountLinks, menuIconSvg, menuInitials, menuMatches, menuProductsFor, menuSectionFor,
+  MENU_COMPANY, MENU_TODD_PROFILE_URL, MenuIconName, MenuSection, MenuLink, MenuProduct, menuAccountLinks, menuAdminItems, menuIconSvg, menuInitials, menuMatches, menuProductsFor, menuSectionFor,
 } from '@taliferro/ui/platform/universal-menu.model';
 import { PLATFORM_MENU_CONFIG } from './platform-menu.config';
 
@@ -27,7 +27,10 @@ import { PLATFORM_MENU_CONFIG } from './platform-menu.config';
 } )
 export class PlatformMenuComponent {
   @Input() isLoggedIn = false;
+  /** A workspace admin (or the master account): sees config.adminItems without access 'master'. */
   @Input() isAdmin = false;
+  /** The Taliferro master account: sees every admin item. */
+  @Input() isMaster = false;
   @Input() userName = '';
   @Input() userEmail = '';
   /** Hide the Menu pill when the page shows its own trigger and calls open(). */
@@ -61,12 +64,18 @@ export class PlatformMenuComponent {
   get appItems (): MenuLink[] {
     return ( this.section?.items || this.config.items ).filter( ( item ) => menuMatches( this.query, item.label, item.keywords ) );
   }
+  get adminItems (): MenuLink[] {
+    if ( !this.isLoggedIn ) return [];
+    return menuAdminItems( this.config.adminItems, this.isAdmin, this.isMaster ).filter( ( item ) => menuMatches( this.query, item.label, item.keywords ) );
+  }
   get secondaryItems (): MenuLink[] { return ( this.config.secondaryItems || [] ).filter( ( item ) => menuMatches( this.query, item.label, item.keywords ) ); }
   get visibleProducts (): MenuProduct[] { return this.products.filter( ( product ) => menuMatches( this.query, product.label ) ); }
   get visibleAccount (): MenuLink[] { return this.accountLinks.filter( ( item ) => menuMatches( this.query, item.label, item.keywords ) ); }
-  get hasAppColumn (): boolean { return ( this.section?.items || this.config.items ).length > 0 || !!this.config.secondaryItems?.length; }
+  get hasAppColumn (): boolean {
+    return ( this.section?.items || this.config.items ).length > 0 || !!this.config.secondaryItems?.length || this.adminItems.length > 0;
+  }
   get noResults (): boolean {
-    return !!this.query && !this.appItems.length && !this.secondaryItems.length && !this.visibleProducts.length && !this.visibleAccount.length;
+    return !!this.query && !this.appItems.length && !this.secondaryItems.length && !this.adminItems.length && !this.visibleProducts.length && !this.visibleAccount.length;
   }
   get initials (): string { return menuInitials( this.userName || this.userEmail ); }
 
@@ -103,10 +112,10 @@ export class PlatformMenuComponent {
 
   /** Enter in search opens the first match. */
   openFirstMatch (): void {
-    const link = [...this.appItems, ...this.secondaryItems][0];
+    const link = [...this.appItems, ...this.secondaryItems, ...this.adminItems][0];
     if ( link?.route ) {
       this.close();
-      void this.router.navigateByUrl( link.route );
+      void this.router.navigate( [link.route], { queryParams: link.queryParams } );
       return;
     }
     const url = link?.url || this.visibleProducts[0]?.url || this.visibleAccount[0]?.url;

@@ -35,6 +35,13 @@
             <ng-container *ngFor="let item of secondaryItems; trackBy: trackByLabel">
               <ng-container *ngTemplateOutlet="row; context: { $implicit: item }"></ng-container>
             </ng-container>
+            <ng-container *ngIf="adminItems.length">
+              <div class="um-divider"></div>
+              <span class="um-eyebrow um-eyebrow--group">Admin</span>
+              <ng-container *ngFor="let item of adminItems; trackBy: trackByLabel">
+                <ng-container *ngTemplateOutlet="row; context: { $implicit: item }"></ng-container>
+              </ng-container>
+            </ng-container>
           </div>
         </nav>
 
@@ -112,7 +119,7 @@
 </div>
 
 <ng-template #row let-item>
-  <a *ngIf="item.route" class="um-row" [routerLink]="item.route" routerLinkActive="is-current" [routerLinkActiveOptions]="{ exact: item.route === '/' }" (click)="close()">
+  <a *ngIf="item.route" class="um-row" [routerLink]="item.route" [queryParams]="item.queryParams" routerLinkActive="is-current" [routerLinkActiveOptions]="{ exact: item.route === '/' }" (click)="close()">
     <span class="um-row__icon" [innerHTML]="icon(item.icon)" aria-hidden="true"></span><span>{{ item.label }}</span>
     <span class="um-ext" *ngIf="item.external" [innerHTML]="icon('arrow-up-right', 14)" aria-hidden="true"></span>
   </a>
