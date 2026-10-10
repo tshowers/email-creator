@@ -103,7 +103,7 @@
 
       <footer class="um-foot">
         <span class="um-foot__company">
-          <strong>{{ company.name }}</strong>
+          <strong><a [href]="company.url">{{ company.name }}</a></strong>
           <a [href]="'mailto:' + company.email">{{ company.email }}</a>
           <a [href]="'tel:' + company.phone">{{ company.phone }}</a>
           <span>{{ company.address }}</span>

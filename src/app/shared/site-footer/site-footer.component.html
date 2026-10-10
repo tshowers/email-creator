@@ -1,0 +1,17 @@
+<!-- SYNCED FROM taliferro-ui/site-footer-component - edit it there. -->
+<footer class="tt-foot">
+  <div class="tt-foot__row tt-foot__app"><ng-content></ng-content></div>
+  <div class="tt-foot__row">
+    <a class="tt-foot__brand" [href]="company.url">{{ company.name }}</a>
+    <a [href]="'mailto:' + company.email">{{ company.email }}</a>
+    <a [href]="phoneHref">{{ company.phone }}</a>
+    <span>{{ company.address }}</span>
+  </div>
+  <nav class="tt-foot__row" aria-label="Taliferro Tech products">
+    <a *ngFor="let product of products" [href]="product.url">{{ product.label }}</a>
+  </nav>
+  <div class="tt-foot__row">
+    <a *ngFor="let link of company.links" [href]="link.url">{{ link.label }}</a>
+    <span>© {{ year }} {{ company.legalName }}</span>
+  </div>
+</footer>

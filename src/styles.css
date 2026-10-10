@@ -1,6 +1,7 @@
 @import "@taliferro/ui/styles/tokens.css";
 @import "@taliferro/ui/styles/controls.css";
 @import "@taliferro/ui/styles/universal-menu.css";
+@import "@taliferro/ui/styles/site-footer.css";
 @import "@taliferro/ui/styles/product-pages.css";
 
 /* Email Creator uses the Find family tokens (tokens.css); they handle dark

@@ -1,6 +1,6 @@
 <!-- Email Creator (design_handoff_todd_tools 7a signed out, 7b empty, 7c email
      made, 7d phone). Yellow. -->
-<div class="app" [class.app--panel]="!!auth.user() && hasEmails()">
+<div class="app" [class.app--panel]="!!auth.user() && hasEmails()" [class.app--out]="auth.user() === null">
   <header class="topbar">
     <a class="brand" routerLink="/">
       <span class="brand-mark"><img src="todd-icon.png" alt="" /></span>
@@ -60,10 +60,7 @@
         </div>
       </div>
     </main>
-    <footer class="page-foot">
-      <span><a routerLink="/help">Help</a><i aria-hidden="true">·</i><a routerLink="/about">About</a></span>
-      <span>Taliferro Tech, LLC</span>
-    </footer>
+    <app-site-footer><a routerLink="/help">Help</a><a routerLink="/about">About</a></app-site-footer>
   } @else {
     <div class="work">
       <section class="chat">

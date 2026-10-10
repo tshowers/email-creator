@@ -3,6 +3,8 @@
 :host { display: block; height: 100dvh; }
 
 .app { display: flex; flex-direction: column; height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); }
+/* Signed out: the page grows past the window when it has to, so the footer is never squeezed. */
+.app--out { height: auto; min-height: 100%; }
 
 svg { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
 
@@ -56,10 +58,6 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--blue); outline-
 .sample-coupon { padding: 10px 12px; border: 2px dashed #c49b6c; border-radius: 10px; font-weight: 700; }
 .sample-cta { align-self: flex-start; padding: 8px 16px; border-radius: 999px; background: #7a4a22; color: #fff; font-weight: 700; }
 
-.page-foot { display: flex; justify-content: space-between; gap: 12px; padding: 16px 64px 22px; color: var(--muted); font-size: 13px; }
-.page-foot a { color: var(--muted); text-decoration: none; }
-.page-foot a:hover { color: var(--text); }
-.page-foot i { margin: 0 8px; font-style: normal; }
 
 /* ---------- Signed in: chat (and the panel once an email exists) ---------- */
 .work { display: flex; flex: 1; min-height: 0; }
@@ -211,7 +209,6 @@ button.dismiss { padding: 2px 8px; border: 0; background: transparent; color: va
   .hero h1 { font-size: 46px; }
   .hero-copy > p { font-size: 16px; }
   .primary.big, .pill.big { height: 50px; padding: 0 20px; font-size: 16px; }
-  .page-foot { padding: 12px 16px 18px; }
   .thread-inner, .app--panel .thread-inner { padding: 8px 16px 16px; }
   .intro { padding-top: 24px; }
   .intro h1 { font-size: 34px; }
