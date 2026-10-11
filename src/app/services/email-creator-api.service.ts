@@ -8,6 +8,12 @@ export interface Usage {
   used: number;
   limit: number;
   remaining: number;
+  /** Prepaid emails, spent once today's free ones are gone (never expire). */
+  credits?: number;
+  hostedImageCredits?: number;
+  /** Credit packs to offer when the free allowance and credits run out. */
+  pack?: string;
+  hostedImagePack?: string;
 }
 
 /** An attached image as the backend sees it: metadata plus an optional small thumbnail. */
@@ -55,7 +61,8 @@ export interface HostedImage {
 }
 
 export class ApiError extends Error {
-  constructor ( message: string, readonly status: number, readonly usage?: Usage ) {
+  /** `pack`: the credit pack that would let this request through (429s only). */
+  constructor ( message: string, readonly status: number, readonly usage?: Usage, readonly pack?: string ) {
     super( message );
   }
 }
@@ -113,6 +120,30 @@ export class EmailCreatorApiService {
     return this.request<{ id: string; url: string }>( 'POST', 'handoff', request );
   }
 
+  /**
+   * Opens Stripe Checkout for a credit pack in `tab` (opened synchronously in
+   * the click, so the browser allows it) - or this tab if it was blocked.
+   * Credits are added by Stripe's webhook, so callers poll getUsage().
+   */
+  async buyCredits ( pack: string, tab: Window | null ): Promise<void> {
+    const token = await this.auth.getIdToken();
+    const headers = new HttpHeaders( { Authorization: `Bearer ${ token }` } );
+    let url = '';
+    try {
+      const res = await firstValueFrom( this.http.post<{ url: string }>( `${ environment.backendURL }/billing/checkout-credits`, {
+        pack,
+        returnUrl: `${ location.origin }${ location.pathname }`,
+      }, { headers } ) );
+      url = res.url;
+    } catch ( error ) {
+      tab?.close();
+      const message = error instanceof HttpErrorResponse ? error.error?.message : '';
+      throw new Error( message || 'Checkout couldn’t start. Please try again.' );
+    }
+    if ( tab && !tab.closed ) tab.location.href = url;
+    else location.assign( url );
+  }
+
   private async request<T> ( method: 'GET' | 'POST', path: string, body?: unknown ): Promise<T> {
     const token = await this.auth.getIdToken();
     const headers = new HttpHeaders( { Authorization: `Bearer ${ token }` } );
@@ -128,7 +159,7 @@ export class EmailCreatorApiService {
           error.status === 413 ?
             'That request was too large. Try fewer or smaller images.' :
             error.error?.message || 'Something went wrong. Please try again.';
-        throw new ApiError( message, error.status, error.error?.usage );
+        throw new ApiError( message, error.status, error.error?.usage, error.error?.pack || error.error?.usage?.pack );
       }
       throw error;
     }

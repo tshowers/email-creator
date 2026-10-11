@@ -144,7 +144,12 @@ export class CreatorComponent {
   } );
   /** The panel shows the rendered email or its HTML. */
   readonly panelView = signal<'preview' | 'html'>( 'preview' );
-  readonly noneLeft = computed( () => this.usage()?.remaining === 0 );
+  /** Out of free emails today AND prepaid credits - the composer offers "Buy more". */
+  readonly noneLeft = computed( () => this.usage()?.remaining === 0 && !( this.usage()?.credits || 0 ) );
+  /** Set when image hosting hit its limit: the hosted-image pack to offer. */
+  readonly hostingPack = signal( '' );
+  /** 'waiting' while Stripe checkout is open in its own tab. */
+  readonly buying = signal<'idle' | 'starting' | 'waiting'>( 'idle' );
   /** Quick changes offered under the newest email. */
   readonly quickChanges = ['Shorter', 'Make it more formal', 'Add a call-to-action button'];
 
@@ -166,6 +171,55 @@ export class CreatorComponent {
     effect( () => {
       if ( this.auth.user() ) void this.refreshUsage();
     } );
+    this.handleReturnFromCheckout();
+  }
+
+  /** Buys a credit pack. Checkout opens in a new tab so the emails here aren't lost. */
+  async buyMore ( pack = this.usage()?.pack || 'email_50' ): Promise<void> {
+    const balance = (): number => pack === this.usage()?.hostedImagePack ? this.usage()?.hostedImageCredits || 0 : this.usage()?.credits || 0;
+    const before = balance();
+    const tab = window.open( '', '_blank' );
+    this.buying.set( 'starting' );
+    try {
+      await this.api.buyCredits( pack, tab );
+    } catch ( error ) {
+      this.buying.set( 'idle' );
+      this.notice.set( error instanceof Error ? error.message : 'Checkout couldn’t start.' );
+      return;
+    }
+    if ( !tab ) return;
+    this.buying.set( 'waiting' );
+    track( 'credits_checkout_started', { pack } );
+    const until = Date.now() + 20 * 60 * 1000;
+    while ( this.buying() === 'waiting' && Date.now() < until ) {
+      await new Promise( ( resolve ) => setTimeout( resolve, 3000 ) );
+      await this.refreshUsage();
+      if ( balance() > before ) {
+        this.buying.set( 'idle' );
+        this.hostingPack.set( '' );
+        this.notice.set( 'Thanks! Your credits were added.' );
+        return;
+      }
+    }
+    this.buying.set( 'idle' );
+  }
+
+  cancelBuying (): void {
+    this.buying.set( 'idle' );
+  }
+
+  /** Stripe returns here with ?checkout=...; the checkout tab closes itself. */
+  private handleReturnFromCheckout (): void {
+    if ( typeof window === 'undefined' ) return;
+    const params = new URLSearchParams( location.search );
+    if ( !params.get( 'checkout' ) ) return;
+    const success = params.get( 'checkout' ) === 'success';
+    history.replaceState( history.state, '', location.pathname );
+    if ( success && window.opener ) {
+      window.close();
+      return;
+    }
+    if ( success ) this.notice.set( 'Thanks! Your credits will appear in a moment.' );
   }
 
   /** Nothing is saved, so warn before the tab takes the emails with it. */
@@ -453,6 +507,7 @@ export class CreatorComponent {
     try {
       await work();
     } catch ( error ) {
+      if ( error instanceof ApiError && error.status === 429 && error.pack ) this.hostingPack.set( error.pack );
       this.handleError( error );
     } finally {
       this.exporting.set( null );

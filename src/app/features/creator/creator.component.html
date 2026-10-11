@@ -10,9 +10,16 @@
     <div class="topbar-actions">
       @if (auth.user()) {
         @if (usage(); as u) {
-          <span class="usage" [class.usage-empty]="u.remaining === 0" title="Resets at midnight Pacific time">
-            <span class="long">{{ u.remaining }} of {{ u.limit }} left today</span><span class="short">{{ u.remaining }} left</span>
+          <span class="usage" [class.usage-empty]="noneLeft()" title="Free emails reset at midnight Pacific time. Bought emails never expire.">
+            <span class="long">{{ u.remaining }} of {{ u.limit }} free left today@if (u.credits) { · {{ u.credits }} bought}</span><span class="short">{{ u.remaining + (u.credits || 0) }} left</span>
           </span>
+          @if (buying() === 'waiting') {
+            <button type="button" class="pill" (click)="cancelBuying()" data-cy="buy-credits-waiting">Finish checkout in the new tab…</button>
+          } @else if (noneLeft()) {
+            <button type="button" class="pill pill-buy" (click)="buyMore()" [disabled]="buying() === 'starting'" data-cy="buy-credits">Buy more emails</button>
+          } @else if (hostingPack()) {
+            <button type="button" class="pill pill-buy" (click)="buyMore(hostingPack())" [disabled]="buying() === 'starting'" data-cy="buy-hosting-credits">Buy more hosted images</button>
+          }
         }
         @if (messages().length) {
           <button type="button" class="pill" (click)="startOver()" [disabled]="busy()">
@@ -134,7 +141,7 @@
                       @if (message.error) {
                         <div class="error">
                           <span>{{ message.error }}</span>
-                          @if (usage()?.remaining !== 0) {
+                          @if (!noneLeft()) {
                             <button type="button" class="pill" (click)="generate(i)" [disabled]="busy()">Try again</button>
                           }
                         </div>
@@ -180,7 +187,7 @@
             <textarea
               #composer
               rows="1"
-              [placeholder]="noneLeft() ? 'No emails left today' : (hasEmails() ? 'Ask for changes…' : 'Describe the email you want…')"
+              [placeholder]="noneLeft() ? 'No emails left today. Buy more to keep going.' : (hasEmails() ? 'Ask for changes…' : 'Describe the email you want…')"
               [disabled]="noneLeft()"
               [ngModel]="draft()"
               (ngModelChange)="draft.set($event)"
