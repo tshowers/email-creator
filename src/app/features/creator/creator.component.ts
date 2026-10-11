@@ -175,7 +175,8 @@ export class CreatorComponent {
   }
 
   /** Buys a credit pack. Checkout opens in a new tab so the emails here aren't lost. */
-  async buyMore ( pack = this.usage()?.pack || 'email_50' ): Promise<void> {
+  async buyMore ( pack = this.usage()?.pack || '' ): Promise<void> {
+    if ( !pack ) return;
     const balance = (): number => pack === this.usage()?.hostedImagePack ? this.usage()?.hostedImageCredits || 0 : this.usage()?.credits || 0;
     const before = balance();
     const tab = window.open( '', '_blank' );
