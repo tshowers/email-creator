@@ -106,8 +106,15 @@ export class PlatformMenuComponent {
 
   onSignIn (): void {
     this.close();
-    if ( this.config.signInRoute ) void this.router.navigateByUrl( this.config.signInRoute );
-    else this.signIn.emit();
+    const signInRoute = this.config.signInRoute;
+    if ( !signInRoute ) {
+      this.signIn.emit();
+      return;
+    }
+    // Come back to this page after signing in (not the app's default landing).
+    const here = this.router.url;
+    const returnUrl = here && !here.startsWith( signInRoute ) ? here : undefined;
+    void this.router.navigate( [signInRoute], { queryParams: returnUrl ? { returnUrl } : {} } );
   }
 
   /** Enter in search opens the first match. */
