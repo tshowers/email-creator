@@ -11,6 +11,7 @@ import packageJson from '../../../../package.json';
 import {
   MENU_COMPANY, MENU_TODD_PROFILE_URL, MenuIconName, MenuSection, MenuLink, MenuProduct, menuAccountLinks, menuAdminItems, menuIconSvg, menuInitials, menuMatches, menuProductsFor, menuSectionFor,
 } from '@taliferro/ui/platform/universal-menu.model';
+import { SoundService } from '../../services/sound.service';
 import { PLATFORM_MENU_CONFIG } from './platform-menu.config';
 
 /**
@@ -56,6 +57,8 @@ export class PlatformMenuComponent {
 
   private readonly sanitizer = inject( DomSanitizer );
   private readonly router = inject( Router );
+  /** Also starts the app-wide button sound (the menu is in every app's root). */
+  private readonly sound = inject( SoundService );
   private readonly iconCache = new Map<string, SafeHtml>();
 
   /** The part of the app you're in, when the app splits its left column by page. */
@@ -86,12 +89,14 @@ export class PlatformMenuComponent {
   }
 
   open (): void {
+    if ( !this.isOpen ) this.sound.playSound( 'toggleOn' );
     this.isOpen = true;
     this.query = '';
     setTimeout( () => this.searchInput?.nativeElement.focus(), 0 );
   }
 
   close (): void {
+    if ( this.isOpen ) this.sound.playSound( 'toggleOff' );
     this.isOpen = false;
   }
 

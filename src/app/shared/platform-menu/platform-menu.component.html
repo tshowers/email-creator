@@ -1,11 +1,12 @@
 <!-- SYNCED FROM taliferro-ui/menu-component - edit it there. -->
 <div class="um">
-  <button *ngIf="showTrigger" type="button" class="um-trigger platform-menu-trigger" (click)="open()" [attr.aria-expanded]="isOpen" aria-haspopup="dialog">
+  <!-- data-sound="off": opening and closing play the toggle sounds, not the button click. -->
+  <button *ngIf="showTrigger" type="button" class="um-trigger platform-menu-trigger" (click)="open()" [attr.aria-expanded]="isOpen" aria-haspopup="dialog" data-sound="off">
     <span [innerHTML]="icon('menu', 18)"></span>Menu
   </button>
 
   <!-- Moved to <body> while open so no parent stacking context can cover it. -->
-  <div class="um um-layer" #layer *ngIf="isOpen">
+  <div class="um um-layer" #layer *ngIf="isOpen" data-sound="off">
   <div class="um-backdrop" (click)="close()" role="presentation">
     <section class="um-panel" role="dialog" aria-modal="true" [attr.aria-label]="config.name + ' menu'" (click)="$event.stopPropagation()">
       <header class="um-head">

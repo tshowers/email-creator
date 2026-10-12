@@ -26,6 +26,7 @@ import { ACCEPTED_IMAGE_TYPES, prepareUpload } from '../../utils/image-files';
 import { track } from '../../utils/analytics';
 import { PlatformMenuComponent } from '../../shared/platform-menu/platform-menu.component';
 import { SiteFooterComponent } from '../../shared/site-footer/site-footer.component';
+import { AlsoFromUsComponent } from '../../shared/also-from-us/also-from-us.component';
 
 interface ChatImage {
   id: string;
@@ -98,7 +99,7 @@ const MAX_ATTACHMENTS_PER_MESSAGE = 6;
 @Component( {
   selector: 'app-creator',
   standalone: true,
-  imports: [SiteFooterComponent,  FormsModule, RouterLink, PlatformMenuComponent ],
+  imports: [ AlsoFromUsComponent, SiteFooterComponent,  FormsModule, RouterLink, PlatformMenuComponent ],
   templateUrl: './creator.component.html',
   styleUrl: './creator.component.css',
 } )
