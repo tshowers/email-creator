@@ -1,6 +1,6 @@
 // SYNCED FROM taliferro-ui/product-pages-component - edit it there, then run sync.sh.
 // Each app keeps its own product-pages.config.ts beside this file.
-import { CommonModule } from '@angular/common';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import { Component, Input, OnDestroy, OnInit, inject } from '@angular/core';
 import { DomSanitizer, Meta, SafeHtml, Title } from '@angular/platform-browser';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -37,8 +37,10 @@ export class ProductPagesComponent implements OnInit, OnDestroy {
   private readonly sanitizer = inject( DomSanitizer );
   private readonly title = inject( Title );
   private readonly meta = inject( Meta );
+  private readonly document = inject( DOCUMENT );
   private readonly iconCache = new Map<string, SafeHtml>();
-  private previous = { title: '', description: '' };
+  private previous = { title: '', description: '', canonical: '', ogUrl: '' };
+  private schemaScript?: HTMLScriptElement;
 
   /** Search engines read these from the prerendered HTML. */
   ngOnInit (): void {
@@ -47,17 +49,77 @@ export class ProductPagesComponent implements OnInit, OnDestroy {
     const description = this.current === 'help'
       ? `How to use ${ name }: getting started in four steps, and answers to common questions. ${ tagline }`
       : about;
-    this.previous = { title: this.title.getTitle(), description: this.meta.getTag( 'name="description"' )?.content || '' };
+    const canonical = this.canonicalLink();
+    this.previous = {
+      title: this.title.getTitle(),
+      description: this.meta.getTag( 'name="description"' )?.content || '',
+      canonical: canonical?.getAttribute( 'href' ) || '',
+      ogUrl: this.meta.getTag( 'property="og:url"' )?.content || '',
+    };
     this.title.setTitle( title );
     this.meta.updateTag( { name: 'description', content: description } );
     this.meta.updateTag( { property: 'og:title', content: title } );
     this.meta.updateTag( { property: 'og:description', content: description } );
+    this.meta.updateTag( { name: 'twitter:title', content: title } );
+    this.meta.updateTag( { name: 'twitter:description', content: description } );
+
+    // The app's index.html canonical names its home page; without a page URL
+    // here, search engines treat Help and About as duplicates of home.
+    const site = this.siteUrl( this.previous.canonical );
+    if ( canonical && site ) {
+      const url = `${ site }/${ this.current }`;
+      canonical.setAttribute( 'href', url );
+      this.meta.updateTag( { property: 'og:url', content: url } );
+      if ( this.current === 'about' ) this.addStructuredData( site, about );
+    }
   }
 
   /** Most app pages set no title of their own; put back what was there. */
   ngOnDestroy (): void {
     this.title.setTitle( this.previous.title );
     this.meta.updateTag( { name: 'description', content: this.previous.description } );
+    if ( this.previous.canonical ) this.canonicalLink()?.setAttribute( 'href', this.previous.canonical );
+    if ( this.previous.ogUrl ) this.meta.updateTag( { property: 'og:url', content: this.previous.ogUrl } );
+    this.schemaScript?.remove();
+  }
+
+  private canonicalLink (): HTMLLinkElement | null {
+    return this.document.head.querySelector( 'link[rel="canonical"]' );
+  }
+
+  /** "https://ask.taliferro.tech/" -> "https://ask.taliferro.tech". */
+  private siteUrl ( href: string ): string {
+    try {
+      return new URL( href ).origin;
+    } catch {
+      return '';
+    }
+  }
+
+  /** Who makes the product, and what it is, for search engines and AI assistants. */
+  private addStructuredData ( site: string, description: string ): void {
+    const organization = `${ this.company.url }/#organization`;
+    const script = this.document.createElement( 'script' );
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify( {
+      '@context': 'https://schema.org',
+      '@graph': [
+        { '@type': 'Organization', '@id': organization, name: this.company.legalName, url: this.company.url },
+        {
+          '@type': 'SoftwareApplication',
+          '@id': `${ site }/#software`,
+          name: this.content.name,
+          url: `${ site }/`,
+          description,
+          applicationCategory: 'BusinessApplication',
+          operatingSystem: 'Web',
+          creator: { '@id': organization },
+          publisher: { '@id': organization },
+        },
+      ],
+    } );
+    this.document.head.appendChild( script );
+    this.schemaScript = script;
   }
 
   get current (): 'help' | 'about' {
