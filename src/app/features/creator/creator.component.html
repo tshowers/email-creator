@@ -91,7 +91,24 @@
               </section>
             } @else {
               @for (message of messages(); track $index; let i = $index) {
-                @if (message.role === 'user') {
+                @if (message.maya; as maya) {
+                  <!-- Copy Maya wrote ("Ask Maya to write it"); TODD designs it next -->
+                  <div class="row row-todd row-maya">
+                    <span class="avatar avatar-maya" aria-hidden="true">M</span>
+                    <div class="todd-message">
+                      <p class="todd-text"><strong>Maya</strong> · {{ maya.reply }}</p>
+                      <div class="maya-copy">
+                        @if (maya.copy.subject) {
+                          <strong class="maya-subject">{{ maya.copy.subject }}</strong>
+                        }
+                        <p class="maya-body">{{ maya.copy.body }}</p>
+                        @if (maya.copy.callToAction?.label) {
+                          <span class="maya-cta">{{ maya.copy.callToAction?.label }}</span>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                } @else if (message.role === 'user') {
                   <div class="row row-user">
                     <div class="user-message">
                       @if (message.images.length) {
@@ -199,6 +216,15 @@
               <button type="button" class="attach" (click)="openFilePicker()" title="Attach a logo or images">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg><span>Logo or images</span>
               </button>
+              @if (canAskMaya()) {
+                <button type="button" class="ask-maya" (click)="askMaya()" [disabled]="!canSendToMaya() || noneLeft()"
+                  title="Maya, your Marketing Director, writes the words from what you typed; TODD designs them">
+                  Ask Maya to write it
+                </button>
+              } @else {
+                <a class="ask-maya" [href]="mayaPricingUrl" target="_blank" rel="noopener"
+                  title="Maya, your Marketing Director, can write your emails - comes with the Maya app">Ask Maya to write it</a>
+              }
               <span class="hint">Enter to send</span>
               <button type="button" class="send" [class.is-ready]="canSend() && !noneLeft()" (click)="send()" [disabled]="!canSend() || noneLeft()" aria-label="Send">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6" /></svg>

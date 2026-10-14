@@ -67,6 +67,28 @@ export class ApiError extends Error {
   }
 }
 
+/** The words Maya wrote for an email ("Ask Maya to write it"); TODD designs them. */
+export interface MayaCopy {
+  subject: string;
+  body: string;
+  callToAction?: { label: string; url?: string };
+  audience?: string;
+  tone?: string;
+}
+
+/** An email Maya designed, opened here to revise ("Edit in Email Creator"). */
+export interface MayaEmail {
+  id: string;
+  subject: string;
+  preheader: string;
+  brief: string;
+  /** Library images are already swapped for todd-image:<id> placeholders. */
+  html: string;
+  images: { id: string; name: string; dataUrl: string }[];
+  /** Images that couldn't be brought along; the next revision drops them. */
+  skippedImages: number;
+}
+
 export type HandoffTarget = 'catalyst' | 'composer';
 
 export interface FillIn {
@@ -96,6 +118,21 @@ export class EmailCreatorApiService {
   async getUsage (): Promise<Usage> {
     const result = await this.request<{ usage: Usage }>( 'GET', 'usage' );
     return result.usage;
+  }
+
+  /** Usage plus whether this workspace can ask Maya to write (the Maya subscription). */
+  getAccount (): Promise<{ usage: Usage; canAskMaya: boolean }> {
+    return this.request<{ usage: Usage; canAskMaya: boolean }>( 'GET', 'usage' );
+  }
+
+  /** Maya writes the copy; it doesn't use one of the day's emails. */
+  mayaCopy ( request: string ): Promise<{ copy: MayaCopy; reply: string }> {
+    return this.request<{ copy: MayaCopy; reply: string }>( 'POST', 'maya-copy', { request } );
+  }
+
+  async mayaEmail ( documentId: string ): Promise<MayaEmail> {
+    const result = await this.request<{ email: MayaEmail }>( 'GET', `maya-email/${ encodeURIComponent( documentId ) }` );
+    return result.email;
   }
 
   chat ( messages: ChatMessagePayload[] ): Promise<ChatTurnResponse> {

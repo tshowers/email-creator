@@ -94,6 +94,12 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--blue); outline-
 .avatar img { width: 22px; height: 22px; object-fit: contain; }
 .todd-message { flex: 1; min-width: 0; }
 .todd-text { margin: 4px 0 0; font-size: 15px; line-height: 1.5; white-space: pre-wrap; }
+/* Copy Maya wrote ("Ask Maya to write it") */
+.avatar-maya { background: var(--t-violet); box-shadow: none; color: var(--t-violet-fg); font-size: 14px; font-weight: 700; }
+.maya-copy { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; padding: 14px 16px; border-radius: 16px; background: var(--surface); }
+.maya-subject { font-size: 15px; }
+.maya-body { margin: 0; font-size: 14px; line-height: 1.55; white-space: pre-wrap; }
+.maya-cta { align-self: flex-start; padding: 6px 12px; border-radius: 999px; background: var(--t-violet); color: var(--t-violet-fg); font-size: 13px; font-weight: 600; }
 .email-placeholder { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 12px 14px; border-radius: 16px; background: var(--surface); color: var(--muted); font-size: 14px; }
 
 /* Artifact link card + quick changes */
@@ -135,6 +141,7 @@ button.dismiss { padding: 2px 8px; border: 0; background: transparent; color: va
 .composer-actions { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
 .attach { display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 14px 0 10px; border: 0; border-radius: 999px; background: var(--bg); color: var(--text); font-size: 14px; font-weight: 600; }
 .attach svg { width: 16px; height: 16px; }
+.ask-maya { display: inline-flex; align-items: center; height: 38px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--t-violet); color: var(--t-violet-fg); font-size: 14px; font-weight: 600; text-decoration: none; white-space: nowrap; }
 .hint { margin-left: auto; color: var(--muted); font-size: 12px; }
 .send { display: grid; place-items: center; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 50%; background: var(--surface2); color: var(--muted); }
 .send.is-ready { background: var(--blue); color: #fff; }

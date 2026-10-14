@@ -9,8 +9,10 @@ import {
   EmailCreatorApiService,
   FillIn,
   HandoffTarget,
+  GeneratedEmail,
   HostedImage,
   ImageRef,
+  MayaCopy,
   Usage,
 } from '../../services/email-creator-api.service';
 import {
@@ -24,6 +26,7 @@ import {
 } from '../../utils/email-export';
 import { ACCEPTED_IMAGE_TYPES, prepareUpload } from '../../utils/image-files';
 import { track } from '../../utils/analytics';
+import { MAYA_EMAIL_PARAM, MAYA_PRICING_URL, dataUrlToFile, mayaCopyMessage } from '../../utils/maya';
 import { PlatformMenuComponent } from '../../shared/platform-menu/platform-menu.component';
 import { SiteFooterComponent } from '../../shared/site-footer/site-footer.component';
 import { AlsoFromUsComponent } from '../../shared/also-from-us/also-from-us.component';
@@ -64,6 +67,8 @@ interface ChatMessage {
   email?: EmailDraft;
   generating?: boolean;
   error?: string;
+  /** Copy Maya wrote: shown as hers; TODD reads `text` (mayaCopyMessage). */
+  maya?: { reply: string; copy: MayaCopy };
 }
 
 type PreviewWidth = 'desktop' | 'mobile';
@@ -127,12 +132,16 @@ export class CreatorComponent {
   readonly exporting = signal<string | null>( null );
   readonly sendPanel = signal<SendPanel | null>( null );
   readonly pricingUrl = OUTREACH_PRICING_URL;
+  readonly mayaPricingUrl = MAYA_PRICING_URL;
+  /** The workspace has Maya, so "Ask Maya to write it" works (else it links to pricing). */
+  readonly canAskMaya = signal( false );
   readonly targetNames = TARGET_NAMES;
 
   readonly generating = computed( () => this.messages().some( ( message ) => message.generating ) );
   readonly busy = computed( () => this.thinking() || this.generating() );
   readonly canSend = computed( () =>
     !this.busy() && ( this.draft().trim().length > 0 || this.attachments().length > 0 ) );
+  readonly canSendToMaya = computed( () => !this.busy() && this.draft().trim().length > 0 );
   readonly hasEmails = computed( () => this.messages().some( ( message ) => message.email ) );
 
   /** Every email made in this chat, oldest first. */
@@ -163,6 +172,7 @@ export class CreatorComponent {
   private nextUploadId = 1;
   private nextEmailId = 1;
   private dragDepth = 0;
+  private mayaLinkHandled = false;
 
   constructor () {
     effect( () => {
@@ -170,7 +180,9 @@ export class CreatorComponent {
       this.selectedEmailId.set( null );
     } );
     effect( () => {
-      if ( this.auth.user() ) void this.refreshUsage();
+      if ( !this.auth.user() ) return;
+      void this.refreshUsage();
+      void this.openMayaEmailFromLink();
     } );
     this.handleReturnFromCheckout();
   }
@@ -297,17 +309,46 @@ export class CreatorComponent {
 
   async send (): Promise<void> {
     if ( !this.canSend() ) return;
+    this.postDraft();
+    await this.runTurn();
+  }
+
+  /**
+   * "Ask Maya to write it": the request goes to Maya, her copy joins the
+   * chat as hers, and TODD designs it from there like any other turn.
+   */
+  async askMaya (): Promise<void> {
+    if ( !this.canSendToMaya() ) return;
+    const request = this.postDraft();
+    this.thinking.set( true );
+    try {
+      const { copy, reply } = await this.api.mayaCopy( request );
+      this.messages.update( ( list ) => [ ...list, { role: 'user', text: mayaCopyMessage( copy ), images: [], maya: { reply, copy } } ] );
+      track( 'maya_copy_written' );
+    } catch ( error ) {
+      this.thinking.set( false );
+      if ( error instanceof ApiError && error.status === 403 ) this.canAskMaya.set( false );
+      this.handleError( error );
+      return;
+    }
+    await this.runTurn();
+  }
+
+  /** Moves the composer's text and attachments into the chat; returns the text. */
+  private postDraft (): string {
+    const text = this.draft().trim();
     this.notice.set( '' );
-    this.messages.update( ( list ) => [
-      ...list,
-      { role: 'user', text: this.draft().trim(), images: this.attachments() },
-    ] );
+    this.messages.update( ( list ) => [ ...list, { role: 'user', text, images: this.attachments() } ] );
     this.draft.set( '' );
     this.attachments.set( [] );
     const composer = this.composer()?.nativeElement;
     if ( composer ) this.autoGrow( composer );
     this.scrollToBottom();
+    return text;
+  }
 
+  /** Asks TODD for the next step in the chat, and designs the email when it's ready. */
+  private async runTurn (): Promise<void> {
     this.thinking.set( true );
     try {
       const turn = await this.api.chat( this.toPayload( this.messages() ) );
@@ -345,14 +386,7 @@ export class CreatorComponent {
 
       const result = await this.api.generate( plan.brief, images, base?.html );
       this.usage.set( result.usage );
-      const email: EmailDraft = {
-        id: `e${ this.nextEmailId++ }`,
-        ...result.email,
-        brief: plan.brief,
-        preview: this.sanitizer.bypassSecurityTrustHtml(
-          previewDocument( embeddedHtml( result.email.html, this.allImages() ) ) ),
-      };
-      this.patchMessage( index, { generating: false, email } );
+      this.patchMessage( index, { generating: false, email: this.toDraft( result.email, plan.brief ) } );
       track( 'email_created', { revision: !!base } );
       this.scrollToBottom();
     } catch ( error ) {
@@ -503,6 +537,60 @@ export class CreatorComponent {
     await this.auth.signOut();
   }
 
+  /**
+   * "Edit in Email Creator" from Maya's work page (?mayaEmail=<id>): her
+   * design opens as the chat's current email, with its images attached, so
+   * the next message revises it.
+   */
+  private async openMayaEmailFromLink (): Promise<void> {
+    if ( this.mayaLinkHandled || typeof window === 'undefined' ) return;
+    const id = new URLSearchParams( location.search ).get( MAYA_EMAIL_PARAM );
+    if ( !id ) return;
+    this.mayaLinkHandled = true;
+    history.replaceState( history.state, '', location.pathname );
+    this.thinking.set( true );
+    try {
+      const email = await this.api.mayaEmail( id );
+      let skipped = email.skippedImages;
+      const images: ChatImage[] = [];
+      for ( const image of email.images ) {
+        try {
+          images.push( { id: image.id, name: image.name, ...await prepareUpload( dataUrlToFile( image.dataUrl, image.name ) ) } );
+        } catch {
+          skipped++;
+        }
+      }
+      const subject = email.subject || 'Your email';
+      this.messages.update( ( list ) => [
+        ...list,
+        { role: 'user', text: `Edit the email Maya designed: "${ subject }"`, images },
+        { role: 'assistant', text: 'Here\'s the email Maya designed. Tell me what to change.', images: [] },
+      ] );
+      const draft = this.toDraft( { subject, preheader: email.preheader, html: email.html, notes: [] },
+        email.brief || `The email "${ subject }" that Maya designed.` );
+      this.patchMessage( this.messages().length - 1, { email: draft } );
+      if ( skipped ) {
+        this.notice.set( `${ skipped === 1 ? 'One image' : `${ skipped } images` } from Maya's email couldn't be brought along; asking for a change will leave ${ skipped === 1 ? 'it' : 'them' } out.` );
+      }
+      track( 'maya_email_opened' );
+      this.scrollToBottom();
+    } catch ( error ) {
+      this.handleError( error );
+    } finally {
+      this.thinking.set( false );
+    }
+  }
+
+  private toDraft ( email: GeneratedEmail, brief: string ): EmailDraft {
+    return {
+      id: `e${ this.nextEmailId++ }`,
+      ...email,
+      brief,
+      // Built after the images it uses are in the chat, so the preview can show them.
+      preview: this.sanitizer.bypassSecurityTrustHtml( previewDocument( embeddedHtml( email.html, this.allImages() ) ) ),
+    };
+  }
+
   private async runExport ( email: EmailDraft, work: () => Promise<void> ): Promise<void> {
     if ( this.exporting() ) return;
     this.exporting.set( email.id );
@@ -587,7 +675,9 @@ export class CreatorComponent {
 
   private async refreshUsage (): Promise<void> {
     try {
-      this.usage.set( await this.api.getUsage() );
+      const account = await this.api.getAccount();
+      this.usage.set( account.usage );
+      this.canAskMaya.set( !!account.canAskMaya );
     } catch {
       // Usage is informational; the backend still enforces the limit.
     }
