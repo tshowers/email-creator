@@ -1,5 +1,13 @@
 import { Injectable, signal } from '@angular/core';
 import { getAuth, onAuthStateChanged, signInWithCustomToken, signOut, User } from 'firebase/auth';
+import { environment } from '../../environments/environment';
+
+/**
+ * Cypress only (cypress/support/e2e.ts): a stand-in signed-in user, so the
+ * end-to-end tests drive the real app against a stubbed backend. Ignored in
+ * production builds and whenever Cypress isn't running the page.
+ */
+export const E2E_USER_STORAGE_KEY = 'email_creator_e2e_user';
 
 /**
  * Sign-in goes through TODD's hosted login (todd.taliferro.tech/login), the
@@ -12,11 +20,18 @@ export class AuthService {
   readonly user = signal<User | null | undefined>( undefined );
 
   private readonly pendingLoginStorageKey = 'email_creator_hosted_login_pending';
+  private e2eUser = false;
 
   constructor () {
     // Prerendering (no browser): render the signed-out page for search engines.
     if ( typeof window === 'undefined' ) {
       this.user.set( null );
+      return;
+    }
+    const e2eUser = this.readE2eUser();
+    if ( e2eUser ) {
+      this.e2eUser = true;
+      this.user.set( e2eUser );
       return;
     }
     onAuthStateChanged( getAuth(), ( user ) => this.user.set( user ) );
@@ -54,12 +69,27 @@ export class AuthService {
   }
 
   async signOut (): Promise<void> {
+    if ( this.e2eUser ) {
+      this.user.set( null );
+      return;
+    }
     await signOut( getAuth() );
   }
 
   async getIdToken (): Promise<string> {
+    if ( this.e2eUser ) return 'e2e-id-token';
     const user = getAuth().currentUser;
     if ( !user ) throw new Error( 'Not signed in.' );
     return user.getIdToken();
+  }
+
+  private readE2eUser (): User | null {
+    if ( environment.production || !( 'Cypress' in window ) ) return null;
+    try {
+      const raw = localStorage.getItem( E2E_USER_STORAGE_KEY );
+      return raw ? JSON.parse( raw ) as User : null;
+    } catch {
+      return null;
+    }
   }
 }
