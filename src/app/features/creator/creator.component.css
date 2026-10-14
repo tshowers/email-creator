@@ -168,6 +168,8 @@ button.dismiss { padding: 2px 8px; border: 0; background: transparent; color: va
 .notes { margin-bottom: 12px; padding: 12px 14px; border-radius: 16px; background: var(--t-yellow); color: var(--t-yellow-fg); font-size: 14px; }
 .notes ul { margin: 6px 0 0; padding-left: 18px; }
 .preview-stage { display: flex; justify-content: center; }
+/* display:flex would otherwise beat [hidden], leaving the preview up in HTML view. */
+.preview-stage[hidden] { display: none; }
 .preview-frame { display: block; width: 560px; max-width: 100%; min-height: 400px; border: 0; border-radius: 12px; background: #fff; }
 .preview-frame.mobile { width: 375px; }
 .code { margin: 0; padding: 14px; overflow: auto; border-radius: 14px; background: var(--bg); color: var(--text); font: 12px/1.5 ui-monospace, Menlo, monospace; white-space: pre-wrap; word-break: break-all; }
@@ -201,6 +203,10 @@ button.dismiss { padding: 2px 8px; border: 0; background: transparent; color: va
   .hero-art { display: none; }
   .app--panel .work { display: flex; flex-direction: column; overflow-y: auto; }
   .app--panel .thread { overflow: visible; }
+  /* Stacked, the column scrolls: neither part may shrink to fit it, or the
+     panel collapses to its toolbar and hides the preview and downloads. */
+  .app--panel .chat, .app--panel .panel { flex: none; }
+  .app--panel .panel-scroll { overflow: visible; }
   .panel { margin: 0 24px 22px; }
 }
 
