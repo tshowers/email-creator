@@ -17,7 +17,6 @@
         <label class="um-search">
           <span [innerHTML]="icon('search', 18)"></span>
           <input #search type="search" [(ngModel)]="query" (keydown.enter)="openFirstMatch()" placeholder="Search products and pages" aria-label="Search products and pages" autocomplete="off" />
-          <span class="um-kbd">⌘K</span>
         </label>
         <button type="button" class="um-close" (click)="close()" aria-label="Close menu">
           <span [innerHTML]="icon('close', 18)" aria-hidden="true"></span><span class="um-close__label">Close</span>
@@ -116,6 +115,30 @@
       </footer>
     </section>
   </div>
+  </div>
+
+  <!-- ⌘K: go to any page in any product. Lifted to <body> like the menu. -->
+  <div class="um us-layer" #searchLayer *ngIf="searchOpen" data-sound="off">
+    <div class="us-backdrop" (click)="closeSearch()" role="presentation">
+      <section class="us-panel" role="dialog" aria-modal="true" aria-label="Go to a page" (click)="$event.stopPropagation()">
+        <label class="um-search us-search">
+          <span [innerHTML]="icon('search', 18)"></span>
+          <input #searchInput type="search" [(ngModel)]="searchQuery" (ngModelChange)="runSearch()" placeholder="Go to any page… try “profile” or “pipeline”" aria-label="Go to any page" autocomplete="off" spellcheck="false" />
+          <span class="um-kbd">esc</span>
+        </label>
+        <div class="us-results" role="listbox" aria-label="Pages">
+          <a *ngFor="let hit of searchHits; let i = index; trackBy: trackByUrl" class="us-hit" role="option" [class.is-active]="i === searchActive" [attr.aria-selected]="i === searchActive" [href]="hit.url" (mouseenter)="searchActive = i" (click)="goTo(hit, $event)">
+            <span class="um-chip us-chip" [attr.data-tint]="hit.tint">
+              <span *ngIf="hit.glyph" class="um-glyph" [attr.data-key]="hit.glyph"></span>
+              <span *ngIf="!hit.glyph" [innerHTML]="icon('building', 16)"></span>
+            </span>
+            <span class="us-hit__label">{{ hit.label }}</span>
+            <span class="us-hit__site">{{ hit.siteName }}</span>
+          </a>
+          <p class="us-empty" *ngIf="!searchHits.length && searchQuery.trim()">No pages match “{{ searchQuery }}”.</p>
+        </div>
+      </section>
+    </div>
   </div>
 </div>
 
