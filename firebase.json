@@ -2,6 +2,7 @@
   "hosting": {
     "site": "todd-email-creator",
     "public": "dist/email-creator/browser",
+    "trailingSlash": false,
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
       {
