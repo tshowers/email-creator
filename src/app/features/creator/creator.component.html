@@ -17,6 +17,7 @@
             <button type="button" class="pill" (click)="cancelBuying()" data-cy="buy-credits-waiting">Finish checkout in the new tab…</button>
           } @else if (noneLeft() && u.pack) {
             <button type="button" class="pill pill-buy" (click)="buyMore()" [disabled]="buying() === 'starting'" data-cy="buy-credits">Buy 5 more emails</button>
+            <button type="button" class="pill" (click)="buySuite()" [disabled]="buying() === 'starting'" data-cy="buy-suite" title="Every TODD app, and 10x the free emails every day"><span class="long">Get TODD Suite · 10x daily</span><span class="short">Suite</span></button>
           } @else if (hostingPack()) {
             <button type="button" class="pill pill-buy" (click)="buyMore(hostingPack())" [disabled]="buying() === 'starting'" data-cy="buy-hosting-credits">Buy more hosted images</button>
           }

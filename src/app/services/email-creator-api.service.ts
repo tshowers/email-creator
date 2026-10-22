@@ -181,6 +181,30 @@ export class EmailCreatorApiService {
     else location.assign( url );
   }
 
+  /**
+   * Opens Stripe Checkout for TODD Suite (every TODD app, 10x the free daily
+   * allowance here) the same way as buyCredits. Suite is switched on by
+   * Stripe's webhook, so callers poll getUsage() for the higher limit.
+   */
+  async buySuite ( tab: Window | null ): Promise<void> {
+    const token = await this.auth.getIdToken();
+    const headers = new HttpHeaders( { Authorization: `Bearer ${ token }` } );
+    let url = '';
+    try {
+      const res = await firstValueFrom( this.http.post<{ url: string }>( `${ environment.backendURL }/billing/checkout`, {
+        product: 'suite',
+        returnUrl: `${ location.origin }${ location.pathname }`,
+      }, { headers } ) );
+      url = res.url;
+    } catch ( error ) {
+      tab?.close();
+      const message = error instanceof HttpErrorResponse ? error.error?.message : '';
+      throw new Error( message || 'Checkout couldn’t start. Please try again.' );
+    }
+    if ( tab && !tab.closed ) tab.location.href = url;
+    else location.assign( url );
+  }
+
   private async request<T> ( method: 'GET' | 'POST', path: string, body?: unknown ): Promise<T> {
     const token = await this.auth.getIdToken();
     const headers = new HttpHeaders( { Authorization: `Bearer ${ token }` } );

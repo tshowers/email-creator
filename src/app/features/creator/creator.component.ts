@@ -218,6 +218,34 @@ export class CreatorComponent {
     this.buying.set( 'idle' );
   }
 
+  /** TODD Suite ($99/mo, @taliferro/ui TODD_SUITE): every TODD app and 10x the free emails every day. */
+  async buySuite (): Promise<void> {
+    const before = this.usage()?.limit || 0;
+    const tab = window.open( '', '_blank' );
+    this.buying.set( 'starting' );
+    try {
+      await this.api.buySuite( tab );
+    } catch ( error ) {
+      this.buying.set( 'idle' );
+      this.notice.set( error instanceof Error ? error.message : 'Checkout couldn’t start.' );
+      return;
+    }
+    if ( !tab ) return;
+    this.buying.set( 'waiting' );
+    track( 'suite_checkout_started', { from: 'email-creator' } );
+    const until = Date.now() + 20 * 60 * 1000;
+    while ( this.buying() === 'waiting' && Date.now() < until ) {
+      await new Promise( ( resolve ) => setTimeout( resolve, 3000 ) );
+      await this.refreshUsage();
+      if ( ( this.usage()?.limit || 0 ) > before ) {
+        this.buying.set( 'idle' );
+        this.notice.set( 'Thanks! TODD Suite is on: every TODD app, and 10x the free emails every day.' );
+        return;
+      }
+    }
+    this.buying.set( 'idle' );
+  }
+
   cancelBuying (): void {
     this.buying.set( 'idle' );
   }
