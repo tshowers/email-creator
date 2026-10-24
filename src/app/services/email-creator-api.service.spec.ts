@@ -98,7 +98,7 @@ describe( 'EmailCreatorApiService', () => {
       expect( req.request.body ).toEqual( { subject: 'Hi {{firstName}}', html: '<p>{{eventDate}}</p>' } );
       req.flush( {
         canSendWithOutreach: true,
-        fillIns: { catalyst: [ { token: 'eventDate', label: 'Event date' } ], composer: [] },
+        fillIns: { catalyst: [ { token: 'eventDate', label: 'Event date' } ], composer: [], drips: [] },
       } );
       expect( ( await result ).fillIns.catalyst[ 0 ].token ).toBe( 'eventDate' );
     } );

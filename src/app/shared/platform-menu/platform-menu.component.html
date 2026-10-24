@@ -1,8 +1,9 @@
 <!-- SYNCED FROM taliferro-ui/menu-component - edit it there. -->
 <div class="um">
   <!-- data-sound="off": opening and closing play the toggle sounds, not the button click. -->
-  <button *ngIf="showTrigger" type="button" class="um-trigger platform-menu-trigger" (click)="open()" [attr.aria-expanded]="isOpen" aria-haspopup="dialog" data-sound="off">
-    <span [innerHTML]="icon('menu', 18)"></span>Menu
+  <!-- aria-label: on phones the word is hidden and only the icon shows. -->
+  <button *ngIf="showTrigger" type="button" class="um-trigger platform-menu-trigger" (click)="open()" [attr.aria-expanded]="isOpen" aria-haspopup="dialog" aria-label="Menu" data-sound="off">
+    <span [innerHTML]="icon('menu', 18)"></span><span class="um-trigger__label">Menu</span>
   </button>
 
   <!-- Moved to <body> while open so no parent stacking context can cover it. -->

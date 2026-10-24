@@ -88,7 +88,7 @@ interface SendPanel {
 }
 
 const OUTREACH_PRICING_URL = 'https://outreach.taliferro.tech/pricing';
-const TARGET_NAMES: Record<HandoffTarget, string> = { catalyst: 'Catalyst', composer: 'Email Composer' };
+const TARGET_NAMES: Record<HandoffTarget, string> = { catalyst: 'Catalyst', composer: 'Email Composer', drips: 'Drips' };
 
 // Only the most recent uploads are sent to the chat model as thumbnails;
 // older ones are still referenced by id so TODD knows they exist.

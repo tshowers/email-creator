@@ -328,6 +328,10 @@
                   <span class="export-title">Send to one - Email Composer</span>
                   <span class="export-detail">One recipient, reviewed before it goes.</span>
                 </button>
+                <button type="button" class="export" (click)="openSend(email, 'drips')" [disabled]="sendPanel()?.working">
+                  <span class="export-title">Send over time - Drips</span>
+                  <span class="export-detail">A newsletter, blog post or announcement that goes out on its own, one person at a time, for up to 30 days.</span>
+                </button>
               </div>
               @if (sendPanel(); as panel) {
                 @if (panel.emailId === email.id) {
@@ -338,11 +342,11 @@
                       <p>Sending needs the Outreach app subscription. Downloading stays free.</p>
                       <a class="button-link" [href]="pricingUrl" target="_blank" rel="noopener">See Outreach pricing</a>
                     } @else if (panel.openUrl) {
-                      <p>Ready. Your name, title and company are filled in{{ panel.target === 'catalyst' ? '; each contact gets their own name and company' : '' }}.</p>
+                      <p>{{ panel.target === 'drips' ? 'Ready in Drips. Pick who gets it and how fast, then turn it on' : 'Ready. Your name, title and company are filled in' }}{{ panel.target === 'catalyst' ? '; each contact gets their own name and company' : '' }}.</p>
                       <a class="button-link primary" [href]="panel.openUrl" target="_blank" rel="noopener" (click)="closeSend()">Open {{ targetNames[panel.target] }}</a>
                     } @else if (panel.canSend) {
                       @if (panel.fillIns.length) {
-                        <p>Fill these in first{{ panel.target === 'catalyst' ? ' - they go to every recipient as written' : '' }}:</p>
+                        <p>Fill these in first{{ panel.target !== 'composer' ? ' - they go to every recipient as written' : '' }}:</p>
                         @for (item of panel.fillIns; track item.token) {
                           <label class="fill">
                             <span>{{ item.label }}</span>

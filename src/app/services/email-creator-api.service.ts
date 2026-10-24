@@ -89,7 +89,7 @@ export interface MayaEmail {
   skippedImages: number;
 }
 
-export type HandoffTarget = 'catalyst' | 'composer';
+export type HandoffTarget = 'catalyst' | 'composer' | 'drips';
 
 export interface FillIn {
   token: string;
