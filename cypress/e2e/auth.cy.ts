@@ -4,7 +4,7 @@ describe( 'Signing in and out', () => {
   it( 'sends a signed-out visitor to TODD\'s login, keeping a Maya link for afterwards', () => {
     cy.intercept( 'https://todd.taliferro.tech/login*', { body: '<html><body>TODD login</body></html>' } ).as( 'login' );
     cy.visit( '/?mayaEmail=d1' );
-    cy.contains( 'button', 'Sign in with TODD' ).click();
+    cy.contains( 'button', 'Sign in with 16Ahead' ).click();
 
     cy.wait( '@login' ).then( ( { request } ) => {
       const url = new URL( request.url );
@@ -16,7 +16,7 @@ describe( 'Signing in and out', () => {
   it( 'stores the return URL and state for the callback before leaving', () => {
     cy.intercept( 'https://todd.taliferro.tech/login*', { body: '<html></html>' } ).as( 'login' );
     cy.visit( '/?mayaEmail=d1' );
-    cy.contains( 'button', 'Sign in with TODD' ).click();
+    cy.contains( 'button', 'Sign in with 16Ahead' ).click();
     cy.wait( '@login' ).then( ( { request } ) => {
       const state = new URL( request.url ).searchParams.get( 'state' );
       // Back on Email Creator (same tab), the pending login is waiting for the callback.
@@ -40,6 +40,6 @@ describe( 'Signing in and out', () => {
     cy.get( '.platform-menu-trigger' ).click();
     cy.contains( '.um-account button', 'Sign out' ).click();
     cy.get( '@confirm' ).should( 'have.been.calledWith', 'Sign out? Emails you haven\'t downloaded will be gone.' );
-    cy.contains( 'button', 'Sign in with TODD' ).should( 'be.visible' );
+    cy.contains( 'button', 'Sign in with 16Ahead' ).should( 'be.visible' );
   } );
 } );

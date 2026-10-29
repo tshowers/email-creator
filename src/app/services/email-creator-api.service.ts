@@ -216,7 +216,7 @@ export class EmailCreatorApiService {
     } catch ( error ) {
       if ( error instanceof HttpErrorResponse ) {
         const message = error.status === 0 ?
-          'Could not reach TODD. Check your connection and try again.' :
+          'Could not reach 16Ahead. Check your connection and try again.' :
           error.status === 413 ?
             'That request was too large. Try fewer or smaller images.' :
             error.error?.message || 'Something went wrong. Please try again.';

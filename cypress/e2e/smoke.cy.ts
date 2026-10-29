@@ -1,4 +1,4 @@
-const SITE = 'https://emails.taliferro.tech';
+const SITE = 'https://emails.16ahead.com';
 
 describe( 'Email Creator smoke test', () => {
   it( 'loads the application', () => {
@@ -9,7 +9,7 @@ describe( 'Email Creator smoke test', () => {
   it( 'shows the signed-out home page with a way to sign in', () => {
     cy.visit( '/' );
     cy.get( 'h1' ).should( 'contain.text', 'What email should we create?' );
-    cy.contains( 'button', 'Sign in with TODD' ).should( 'be.visible' );
+    cy.contains( 'button', 'Sign in with 16Ahead' ).should( 'be.visible' );
     cy.get( 'link[rel="canonical"]' ).should( 'have.attr', 'href', `${ SITE }/` );
   } );
 

@@ -1,14 +1,14 @@
 import { API, emailHtml, makeEmail, pngFile, say, stubGenerate, stubPlan, visitSignedIn } from '../support/helpers';
 
-const CATALYST_URL = 'https://outreach.taliferro.tech/email-processor?emailCreatorHandoff=h1';
-const COMPOSER_URL = 'https://outreach.taliferro.tech/compose-email?emailCreatorHandoff=h2';
+const CATALYST_URL = 'https://outreach.16ahead.com/email-processor?emailCreatorHandoff=h1';
+const COMPOSER_URL = 'https://outreach.16ahead.com/compose-email?emailCreatorHandoff=h2';
 const HOSTED_URL = 'https://firebasestorage.googleapis.com/v0/b/taliferrotech.appspot.com/o/email-creator%2Flogo.png?alt=media';
 
 function stubCheck ( canSendWithOutreach: boolean, fillIns: { catalyst?: { token: string; label: string }[]; composer?: { token: string; label: string }[] } = {} ): void {
   cy.intercept( 'POST', `${ API }/handoff/check`, {
     success: true,
     canSendWithOutreach,
-    fillIns: { catalyst: fillIns.catalyst || [], composer: fillIns.composer || [] },
+    fillIns: { catalyst: fillIns.catalyst || [], composer: fillIns.composer || [], drips: [] },
   } ).as( 'check' );
 }
 
@@ -67,13 +67,24 @@ describe( 'Sending with Outreach', () => {
     cy.wait( '@handoff' ).its( 'request.body.html' ).should( 'contain', `src="${ HOSTED_URL }"` ).and( 'not.contain', 'todd-image:' );
   } );
 
+  it( 'sends an email to Drips, where it waits in Ready', () => {
+    makeEmail();
+    stubCheck( true );
+    const dripUrl = 'https://outreach.16ahead.com/drips/d1';
+    cy.intercept( 'POST', `${ API }/handoff`, { success: true, id: 'd1', url: dripUrl } ).as( 'handoff' );
+    cy.contains( 'button', 'Send over time - Drips' ).should( 'contain.text', 'one person at a time, for up to 30 days' ).click();
+    cy.wait( '@handoff' ).its( 'request.body' ).should( 'deep.include', { target: 'drips', subject: 'Fall loaves are here', fills: {} } );
+    cy.get( '.send-panel' ).should( 'contain.text', 'Ready in Drips. Pick who gets it and how fast, then turn it on.' );
+    cy.contains( '.send-panel a', 'Open Drips' ).should( 'have.attr', 'href', dripUrl ).and( 'have.attr', 'target', '_blank' );
+  } );
+
   it( 'points to Outreach pricing without the subscription', () => {
     makeEmail();
     stubCheck( false );
     cy.contains( 'button', 'Send to many - Catalyst' ).click();
     cy.wait( '@check' );
     cy.get( '.send-panel' ).should( 'contain.text', 'Sending needs the Outreach app subscription. Downloading stays free.' );
-    cy.contains( '.send-panel a', 'See Outreach pricing' ).should( 'have.attr', 'href', 'https://outreach.taliferro.tech/pricing' );
+    cy.contains( '.send-panel a', 'See Outreach pricing' ).should( 'have.attr', 'href', 'https://outreach.16ahead.com/pricing' );
   } );
 
   it( 'shows why a handoff failed and can be cancelled', () => {

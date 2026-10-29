@@ -87,7 +87,7 @@ export class ProductPagesComponent implements OnInit, OnDestroy {
     return this.document.head.querySelector( 'link[rel="canonical"]' );
   }
 
-  /** "https://ask.taliferro.tech/" -> "https://ask.taliferro.tech". */
+  /** "https://assistant.16ahead.com/" -> "https://assistant.16ahead.com". */
   private siteUrl ( href: string ): string {
     try {
       return new URL( href ).origin;

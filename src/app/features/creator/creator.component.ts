@@ -87,7 +87,7 @@ interface SendPanel {
   openUrl: string;
 }
 
-const OUTREACH_PRICING_URL = 'https://outreach.taliferro.tech/pricing';
+const OUTREACH_PRICING_URL = 'https://outreach.16ahead.com/pricing';
 const TARGET_NAMES: Record<HandoffTarget, string> = { catalyst: 'Catalyst', composer: 'Email Composer', drips: 'Drips' };
 
 // Only the most recent uploads are sent to the chat model as thumbnails;
@@ -166,6 +166,7 @@ export class CreatorComponent {
   private readonly scroller = viewChild<ElementRef<HTMLElement>>( 'scroller' );
   private readonly composer = viewChild<ElementRef<HTMLTextAreaElement>>( 'composer' );
   private readonly fileInput = viewChild<ElementRef<HTMLInputElement>>( 'fileInput' );
+  private readonly sendPanelEl = viewChild<ElementRef<HTMLElement>>( 'sendPanelEl' );
 
   /** Images already uploaded for the hosted download, so a second download doesn't re-upload. */
   private readonly hosted = new Map<string, HostedImage>();
@@ -183,6 +184,11 @@ export class CreatorComponent {
       if ( !this.auth.user() ) return;
       void this.refreshUsage();
       void this.openMayaEmailFromLink();
+    } );
+    // The send panel opens below the cards, past the bottom of the panel's scroll area.
+    effect( () => {
+      if ( !this.sendPanel() ) return;
+      setTimeout( () => this.sendPanelEl()?.nativeElement.scrollIntoView( { block: 'nearest', behavior: 'smooth' } ) );
     } );
     this.handleReturnFromCheckout();
   }
@@ -239,7 +245,7 @@ export class CreatorComponent {
       await this.refreshUsage();
       if ( ( this.usage()?.limit || 0 ) > before ) {
         this.buying.set( 'idle' );
-        this.notice.set( 'Thanks! TODD Suite is on: every TODD app, and 10x the free emails every day.' );
+        this.notice.set( 'Thanks! 16Ahead Suite is on: every 16Ahead app, and 10x the free emails every day.' );
         return;
       }
     }
@@ -591,14 +597,14 @@ export class CreatorComponent {
       const subject = email.subject || 'Your email';
       this.messages.update( ( list ) => [
         ...list,
-        { role: 'user', text: `Edit the email Maya designed: "${ subject }"`, images },
-        { role: 'assistant', text: 'Here\'s the email Maya designed. Tell me what to change.', images: [] },
+        { role: 'user', text: `Edit the email the Marketing Assistant designed: "${ subject }"`, images },
+        { role: 'assistant', text: 'Here\'s the email the Marketing Assistant designed. Tell me what to change.', images: [] },
       ] );
       const draft = this.toDraft( { subject, preheader: email.preheader, html: email.html, notes: [] },
-        email.brief || `The email "${ subject }" that Maya designed.` );
+        email.brief || `The email "${ subject }" that the Marketing Assistant designed.` );
       this.patchMessage( this.messages().length - 1, { email: draft } );
       if ( skipped ) {
-        this.notice.set( `${ skipped === 1 ? 'One image' : `${ skipped } images` } from Maya's email couldn't be brought along; asking for a change will leave ${ skipped === 1 ? 'it' : 'them' } out.` );
+        this.notice.set( `${ skipped === 1 ? 'One image' : `${ skipped } images` } from the Marketing Assistant's email couldn't be brought along; asking for a change will leave ${ skipped === 1 ? 'it' : 'them' } out.` );
       }
       track( 'maya_email_opened' );
       this.scrollToBottom();

@@ -3,14 +3,14 @@ import { dataUrlToBytes } from './image-files';
 
 /** Maya's work page links here as ?mayaEmail=<Docs document id> ("Edit in Email Creator"). */
 export const MAYA_EMAIL_PARAM = 'mayaEmail';
-export const MAYA_PRICING_URL = 'https://maya.taliferro.tech/pricing';
+export const MAYA_PRICING_URL = 'https://marketing.16ahead.com/pricing';
 
 /**
  * Maya's copy as the chat message TODD reads: it says the words are final,
  * so TODD designs them instead of asking questions or rewriting them.
  */
 export function mayaCopyMessage ( copy: MayaCopy ): string {
-  const lines = [ 'Maya, our Marketing Director, wrote this copy. Design the email using it as written:', '' ];
+  const lines = [ 'The Marketing Assistant wrote this copy. Design the email using it as written:', '' ];
   if ( copy.subject ) lines.push( `Subject: ${ copy.subject }`, '' );
   lines.push( copy.body );
   if ( copy.callToAction?.label ) {

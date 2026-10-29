@@ -10,7 +10,7 @@ describe( 'maya utils', () => {
         audience: 'regulars',
         tone: 'warm',
       } ) ).toBe( [
-        'Maya, our Marketing Director, wrote this copy. Design the email using it as written:',
+        'The Marketing Assistant wrote this copy. Design the email using it as written:',
         '',
         'Subject: Fall loaves are here',
         '',
@@ -24,7 +24,7 @@ describe( 'maya utils', () => {
 
     it( 'leaves out the parts Maya didn\'t give', () => {
       expect( mayaCopyMessage( { subject: '', body: 'Just the body.', callToAction: { label: 'Call us' } } ) ).toBe(
-        'Maya, our Marketing Director, wrote this copy. Design the email using it as written:\n\nJust the body.\n\nCall to action: Call us',
+        'The Marketing Assistant wrote this copy. Design the email using it as written:\n\nJust the body.\n\nCall to action: Call us',
       );
     } );
   } );

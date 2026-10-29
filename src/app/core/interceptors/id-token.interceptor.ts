@@ -18,7 +18,9 @@ function isToddBackend ( url: string ): boolean {
   if ( url.startsWith( '/' ) ) return true;
   try {
     const host = new URL( url ).hostname;
-    return host === 'taliferro.tech' || host.endsWith( '.taliferro.tech' ) || host.endsWith( '.run.app' ) ||
+    return host === 'taliferro.tech' || host.endsWith( '.taliferro.tech' ) ||
+      host === '16ahead.io' || host.endsWith( '.16ahead.io' ) || host.endsWith( '.16ahead.com' ) || host.endsWith( '.16ahead.store' ) ||
+      host.endsWith( '.run.app' ) ||
       host === 'localhost' || host === '127.0.0.1';
   } catch {
     return false;

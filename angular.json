@@ -56,6 +56,11 @@
             "assets": [
               {
                 "glob": "**/*",
+                "input": "../../taliferro-ui/brand/products",
+                "output": "assets/brand/products"
+              },
+              {
+                "glob": "**/*",
                 "input": "public"
               }
             ],

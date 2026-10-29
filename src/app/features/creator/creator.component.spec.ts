@@ -93,7 +93,7 @@ describe( 'CreatorComponent and Maya', () => {
       const payload = api.chat.calls.mostRecent().args[ 0 ];
       expect( payload.map( ( message ) => message.role ) ).toEqual( [ 'user', 'user' ] );
       expect( payload[ 0 ].text ).toBe( 'Announce our fall menu' );
-      expect( payload[ 1 ].text ).toContain( 'Maya, our Marketing Director, wrote this copy' );
+      expect( payload[ 1 ].text ).toContain( 'The Marketing Assistant wrote this copy' );
       expect( payload[ 1 ].text ).toContain( 'Hi {{firstName}}, pumpkin sourdough is back.' );
       expect( api.generate ).toHaveBeenCalledTimes( 1 );
 
@@ -117,13 +117,13 @@ describe( 'CreatorComponent and Maya', () => {
     } );
 
     it( 'explains a refusal and switches to the pricing link', async () => {
-      api.mayaCopy.and.rejectWith( new ApiError( 'Maya writes emails for workspaces with the Maya app subscription.', 403 ) );
+      api.mayaCopy.and.rejectWith( new ApiError( 'The Marketing Assistant writes emails for workspaces with the Marketing Assistant app subscription.', 403 ) );
       await create();
       component.draft.set( 'Announce our fall menu' );
       await component.askMaya();
       fixture.detectChanges();
 
-      expect( component.notice() ).toContain( 'Maya app subscription' );
+      expect( component.notice() ).toContain( 'Marketing Assistant app subscription' );
       expect( api.chat ).not.toHaveBeenCalled();
       expect( el( 'a.ask-maya' ) ).not.toBeNull();
       expect( component.thinking() ).toBeFalse();
@@ -177,8 +177,8 @@ describe( 'CreatorComponent and Maya', () => {
       await create( { query: '?mayaEmail=d1' } );
       await settle();
 
-      expect( component.notice() ).toContain( '2 images from Maya\'s email couldn\'t be brought along' );
-      expect( component.selectedEmail()!.brief ).toBe( 'The email "Fall loaves" that Maya designed.' );
+      expect( component.notice() ).toContain( '2 images from the Marketing Assistant\'s email couldn\'t be brought along' );
+      expect( component.selectedEmail()!.brief ).toBe( 'The email "Fall loaves" that the Marketing Assistant designed.' );
     } );
 
     it( 'shows the error when the email can\'t be opened', async () => {

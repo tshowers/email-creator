@@ -87,7 +87,7 @@ describe( 'Creating an email', () => {
     cy.intercept( 'POST', `${ API }/chat`, { delay: 400, body: { success: true, action: 'generate', reply: 'On it.', brief: 'b', imageIds: [], baseEmailId: null, usage: USAGE } } ).as( 'chat' );
     cy.intercept( 'POST', `${ API }/generate`, { delay: 400, body: { success: true, email: { subject: 's', preheader: '', html: emailHtml( 'x' ), notes: [] }, usage: USAGE } } ).as( 'generate' );
     say( 'An email' );
-    cy.get( '[aria-label="TODD is thinking"]' ).should( 'be.visible' );
+    cy.get( '[aria-label="16Ahead is thinking"]' ).should( 'be.visible' );
     cy.get( '.email-placeholder' ).should( 'contain.text', 'Writing and designing your email' );
     cy.get( '.composer .send' ).should( 'be.disabled' );
     cy.wait( '@generate' );
@@ -97,7 +97,7 @@ describe( 'Creating an email', () => {
   it( 'reports a lost connection and an expired session', () => {
     cy.intercept( 'POST', `${ API }/chat`, { forceNetworkError: true } ).as( 'chat' );
     say( 'An email' );
-    cy.get( '.notice' ).should( 'contain.text', 'Could not reach TODD. Check your connection and try again.' );
+    cy.get( '.notice' ).should( 'contain.text', 'Could not reach 16Ahead. Check your connection and try again.' );
 
     cy.intercept( 'POST', `${ API }/chat`, { statusCode: 401, body: { message: 'Unauthorized' } } ).as( 'chat' );
     say( 'Try again' );
@@ -140,7 +140,7 @@ describe( 'Attaching images', () => {
     cy.get( '.attachment' ).should( 'not.exist' );
     cy.get( '.user-image' ).should( 'contain.text', 'logo.png' );
     previewBody().find( 'img' ).should( 'have.attr', 'src' ).and( 'match', /^data:image\/png/ );
-    cy.get( '.more-note' ).should( 'contain.text', 'hosts the images with TODD for 30 days' );
+    cy.get( '.more-note' ).should( 'contain.text', 'hosts the images with 16Ahead for 30 days' );
   } );
 
   it( 'removes an attachment before sending', () => {

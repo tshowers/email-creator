@@ -22,7 +22,7 @@ describe( 'TODD Suite in Email Creator', () => {
     cy.intercept( 'POST', SUITE_CHECKOUT, { url: CHECKOUT_URL } ).as( 'checkout' );
     cy.clock( Date.now(), [ 'setTimeout' ] );
 
-    cy.get( '[data-cy="buy-suite"]' ).should( 'contain.text', 'Get TODD Suite' ).click();
+    cy.get( '[data-cy="buy-suite"]' ).should( 'contain.text', 'Get 16Ahead Suite' ).click();
     cy.get( '@open' ).should( 'have.been.calledWith', '', '_blank' );
     cy.wait( '@checkout' ).then( ( { request } ) => {
       expect( request.body.product ).to.equal( 'suite' );
@@ -35,7 +35,7 @@ describe( 'TODD Suite in Email Creator', () => {
     cy.intercept( 'GET', `${ API }/usage`, { success: true, usage: { ...NONE_LEFT, limit: 100, remaining: 90 }, canAskMaya: false } ).as( 'usage' );
     cy.tick( 3000 );
     cy.wait( '@usage' );
-    cy.get( '.notice' ).should( 'contain.text', 'TODD Suite is on' );
+    cy.get( '.notice' ).should( 'contain.text', '16Ahead Suite is on' );
     cy.get( '.usage' ).should( 'contain.text', '90 of 100 free left today' );
     cy.get( '.composer textarea' ).should( 'not.be.disabled' );
   } );
@@ -44,10 +44,10 @@ describe( 'TODD Suite in Email Creator', () => {
     visitSignedIn( '/', { usage: NONE_LEFT } );
     const tab = { closed: false, location: { href: '' }, close: () => { tab.closed = true; } };
     cy.window().then( ( win ) => cy.stub( win, 'open' ).returns( tab ) );
-    cy.intercept( 'POST', SUITE_CHECKOUT, { statusCode: 409, body: { code: 'ALREADY_ENTITLED', message: 'You already have TODD Suite.' } } ).as( 'checkout' );
+    cy.intercept( 'POST', SUITE_CHECKOUT, { statusCode: 409, body: { code: 'ALREADY_ENTITLED', message: 'You already have 16Ahead Suite.' } } ).as( 'checkout' );
     cy.get( '[data-cy="buy-suite"]' ).click();
     cy.wait( '@checkout' );
-    cy.get( '.notice' ).should( 'contain.text', 'You already have TODD Suite.' );
+    cy.get( '.notice' ).should( 'contain.text', 'You already have 16Ahead Suite.' );
     cy.wrap( tab ).its( 'closed' ).should( 'be.true' );
   } );
 } );

@@ -1,6 +1,6 @@
 import { API, PNG_DATA_URL, emailHtml, previewBody, say, stubGenerate, stubPlan, visitSignedIn } from '../support/helpers';
 
-const MAYA_HTML = emailHtml( '<img src="todd-image:m1" alt="logo"><h1>Fall loaves</h1><p>From Maya.</p>' );
+const MAYA_HTML = emailHtml( '<img src="todd-image:m1" alt="logo"><h1>Fall loaves</h1><p>From the Marketing Assistant.</p>' );
 
 function stubMayaEmail ( overrides: Record<string, unknown> = {} ): void {
   cy.intercept( 'GET', `${ API }/maya-email/d1`, {
@@ -31,10 +31,10 @@ describe( 'Ask Maya to write it', () => {
     cy.wait( '@chat' ).its( 'request.body.messages' ).then( ( messages ) => {
       expect( messages ).to.have.length( 2 );
       expect( messages[ 1 ].role ).to.equal( 'user' );
-      expect( messages[ 1 ].text ).to.contain( 'Maya, our Marketing Director, wrote this copy' );
+      expect( messages[ 1 ].text ).to.contain( 'The Marketing Assistant wrote this copy' );
     } );
     cy.wait( '@generate' );
-    cy.get( '.row-maya' ).should( 'contain.text', 'Maya' ).and( 'contain.text', 'I kept it short.' );
+    cy.get( '.row-maya' ).should( 'contain.text', 'Marketing Assistant' ).and( 'contain.text', 'I kept it short.' );
     cy.get( '.maya-subject' ).should( 'have.text', 'Fall loaves are here' );
     cy.get( '.maya-cta' ).should( 'have.text', 'Order ahead' );
     previewBody().should( 'contain.text', 'pumpkin sourdough is back' );
@@ -43,18 +43,18 @@ describe( 'Ask Maya to write it', () => {
   it( 'links to Maya\'s pricing for workspaces without Maya', () => {
     visitSignedIn( '/', { canAskMaya: false } );
     cy.get( 'button.ask-maya' ).should( 'not.exist' );
-    cy.get( 'a.ask-maya' ).should( 'have.attr', 'href', 'https://maya.taliferro.tech/pricing' ).and( 'have.attr', 'target', '_blank' );
+    cy.get( 'a.ask-maya' ).should( 'have.attr', 'href', 'https://marketing.16ahead.com/pricing' ).and( 'have.attr', 'target', '_blank' );
   } );
 
   it( 'switches to the pricing link if Maya refuses', () => {
     visitSignedIn( '/', { canAskMaya: true } );
     cy.intercept( 'POST', `${ API }/maya-copy`, {
-      statusCode: 403, body: { message: 'Maya writes emails for workspaces with the Maya app subscription.' },
+      statusCode: 403, body: { message: 'The Marketing Assistant writes emails for workspaces with the Marketing Assistant app subscription.' },
     } ).as( 'mayaCopy' );
     cy.get( '.composer textarea' ).type( 'Announce our fall menu' );
     cy.get( 'button.ask-maya' ).click();
     cy.wait( '@mayaCopy' );
-    cy.get( '.notice' ).should( 'contain.text', 'Maya app subscription' );
+    cy.get( '.notice' ).should( 'contain.text', 'Marketing Assistant app subscription' );
     cy.get( 'a.ask-maya' ).should( 'be.visible' );
   } );
 } );
@@ -65,10 +65,10 @@ describe( 'Edit in Email Creator (from Maya\'s work page)', () => {
     visitSignedIn( '/?mayaEmail=d1' );
     cy.wait( '@mayaEmail' );
     cy.location( 'search' ).should( 'equal', '' );
-    cy.get( '.todd-text' ).should( 'contain.text', 'Here\'s the email Maya designed. Tell me what to change.' );
+    cy.get( '.todd-text' ).should( 'contain.text', 'Here\'s the email the Marketing Assistant designed. Tell me what to change.' );
     cy.get( '.user-image' ).should( 'contain.text', 'logo.png' );
     cy.get( '.email-meta' ).should( 'contain.text', 'Fall loaves' ).and( 'contain.text', 'Pumpkin is back' );
-    previewBody().should( 'contain.text', 'From Maya.' ).find( 'img' ).should( 'have.attr', 'src' ).and( 'match', /^data:image\/png/ );
+    previewBody().should( 'contain.text', 'From the Marketing Assistant.' ).find( 'img' ).should( 'have.attr', 'src' ).and( 'match', /^data:image\/png/ );
 
     stubPlan( 'Shorter', { baseEmailId: 'e1' } );
     stubGenerate( { subject: 'Fall loaves (short)', html: emailHtml( '<img src="todd-image:m1" alt="logo"><p>Short.</p>' ) } );
@@ -85,7 +85,7 @@ describe( 'Edit in Email Creator (from Maya\'s work page)', () => {
     stubMayaEmail( { images: [], skippedImages: 2 } );
     visitSignedIn( '/?mayaEmail=d1' );
     cy.wait( '@mayaEmail' );
-    cy.get( '.notice' ).should( 'contain.text', '2 images from Maya\'s email couldn\'t be brought along' );
+    cy.get( '.notice' ).should( 'contain.text', '2 images from the Marketing Assistant\'s email couldn\'t be brought along' );
   } );
 
   it( 'reports an email that can\'t be opened', () => {

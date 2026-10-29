@@ -3,8 +3,8 @@
 <div class="app" [class.app--panel]="!!auth.user() && hasEmails()" [class.app--out]="auth.user() === null">
   <header class="topbar">
     <a class="brand" routerLink="/">
-      <span class="brand-mark"><img src="assets/email-creator-logo.png" alt="" /></span>
-      <span class="brand-name"><span class="brand-todd">TODD </span><span class="brand-product">Email Creator</span></span>
+      <span class="brand-mark"><img class="brand-mark--light" src="assets/brand/products/svg/light/13-email-creator.svg" alt="" /><img class="brand-mark--dark" src="assets/brand/products/svg/dark/13-email-creator.svg" alt="" /></span>
+      <span class="brand-name"><span class="brand-todd">16Ahead </span><span class="brand-product">Email Creator</span></span>
     </a>
 
     <div class="topbar-actions">
@@ -17,7 +17,7 @@
             <button type="button" class="pill" (click)="cancelBuying()" data-cy="buy-credits-waiting">Finish checkout in the new tab…</button>
           } @else if (noneLeft() && u.pack) {
             <button type="button" class="pill pill-buy" (click)="buyMore()" [disabled]="buying() === 'starting'" data-cy="buy-credits">Buy 5 more emails</button>
-            <button type="button" class="pill" (click)="buySuite()" [disabled]="buying() === 'starting'" data-cy="buy-suite" title="Every TODD app, and 10x the free emails every day"><span class="long">Get TODD Suite · 10x daily</span><span class="short">Suite</span></button>
+            <button type="button" class="pill" (click)="buySuite()" [disabled]="buying() === 'starting'" data-cy="buy-suite" title="Every 16Ahead app, and 10x the free emails every day"><span class="long">Get 16Ahead Suite · 10x daily</span><span class="short">Suite</span></button>
           } @else if (hostingPack()) {
             <button type="button" class="pill pill-buy" (click)="buyMore(hostingPack())" [disabled]="buying() === 'starting'" data-cy="buy-hosting-credits">Buy more hosted images</button>
           }
@@ -40,19 +40,19 @@
     <!-- 7a: signed out -->
     <main class="hero">
       <div class="hero-copy">
-        <span class="kicker">10 emails a day, free with TODD</span>
+        <span class="kicker">10 emails a day, free with 16Ahead</span>
         <h1>What email should we create?</h1>
         <p>
-          Tell TODD about the email you need, from a marketing campaign or newsletter to a simple business email.
-          Attach your logo or any images to include. TODD writes the copy, designs the layout, and gives you
+          Tell 16Ahead about the email you need, from a marketing campaign or newsletter to a simple business email.
+          Attach your logo or any images to include. 16Ahead writes the copy, designs the layout, and gives you
           HTML ready for Mailchimp, Constant Contact, or your own inbox.
         </p>
         <div class="hero-actions">
-          <button type="button" class="primary big" (click)="auth.signIn()">Sign in with TODD</button>
+          <button type="button" class="primary big" (click)="auth.signIn()">Sign in with 16Ahead</button>
           <a class="pill big" routerLink="/help">How it works</a>
         </div>
         <p class="fine-print">Nothing is saved. Download the emails you want to keep before you leave.</p>
-        <p class="tt-made-by"><a href="https://todd.taliferro.tech" target="_blank" rel="noopener"><span class="tt-made-by__todd"><img src="todd-icon.png" alt="" /></span>Powered by <strong>TODD</strong></a><i aria-hidden="true"></i><a appAlsoFromUs></a></p>
+        <p class="tt-made-by"><a href="https://app.16ahead.com" target="_blank" rel="noopener"><span class="tt-made-by__todd"><img class="brand-mark--light" src="assets/brand/products/png/light/01-16ahead-64.png" alt="" /><img class="brand-mark--dark" src="assets/brand/products/png/dark/01-16ahead-64.png" alt="" /></span>Powered by <strong>16Ahead</strong></a><i aria-hidden="true"></i><a appAlsoFromUs></a></p>
       </div>
       <div class="hero-art" aria-hidden="true">
         <!-- A drawn stand-in for a generated email (not real output). -->
@@ -79,7 +79,7 @@
               <section class="intro">
                 <span class="intro-mark"><span class="um-glyph" data-key="email-creator"></span></span>
                 <h1>What email should we create?</h1>
-                <p>Tell TODD about the email you need. Attach your logo or any images to include.</p>
+                <p>Tell 16Ahead about the email you need. Attach your logo or any images to include.</p>
                 <span class="label">Try one</span>
                 <div class="suggestions">
                   @for (suggestion of suggestions; track suggestion) {
@@ -97,7 +97,7 @@
                   <div class="row row-todd row-maya">
                     <span class="avatar avatar-maya" aria-hidden="true">M</span>
                     <div class="todd-message">
-                      <p class="todd-text"><strong>Maya</strong> · {{ maya.reply }}</p>
+                      <p class="todd-text"><strong>Marketing Assistant</strong> · {{ maya.reply }}</p>
                       <div class="maya-copy">
                         @if (maya.copy.subject) {
                           <strong class="maya-subject">{{ maya.copy.subject }}</strong>
@@ -126,7 +126,7 @@
                   </div>
                 } @else {
                   <div class="row row-todd">
-                    <span class="avatar"><img src="todd-icon.png" alt="TODD" /></span>
+                    <span class="avatar"><img src="todd-icon.png" alt="16Ahead" /></span>
                     <div class="todd-message">
                       <p class="todd-text">{{ message.text }}</p>
 
@@ -171,8 +171,8 @@
 
               @if (thinking()) {
                 <div class="row row-todd">
-                  <span class="avatar"><img src="todd-icon.png" alt="TODD" /></span>
-                  <span class="dots" aria-label="TODD is thinking"><i></i><i></i><i></i></span>
+                  <span class="avatar"><img src="todd-icon.png" alt="16Ahead" /></span>
+                  <span class="dots" aria-label="16Ahead is thinking"><i></i><i></i><i></i></span>
                 </div>
               }
             }
@@ -219,12 +219,12 @@
               </button>
               @if (canAskMaya()) {
                 <button type="button" class="ask-maya" (click)="askMaya()" [disabled]="!canSendToMaya() || noneLeft()"
-                  title="Maya, your Marketing Director, writes the words from what you typed; TODD designs them">
-                  Ask Maya to write it
+                  title="Marketing Assistant, your Marketing Director, writes the words from what you typed; 16Ahead designs them">
+                  Ask the Marketing Assistant to write it
                 </button>
               } @else {
                 <a class="ask-maya" [href]="mayaPricingUrl" target="_blank" rel="noopener"
-                  title="Maya, your Marketing Director, can write your emails - comes with the Maya app">Ask Maya to write it</a>
+                  title="Marketing Assistant, your Marketing Director, can write your emails - comes with the Marketing Assistant app">Ask the Marketing Assistant to write it</a>
               }
               <span class="hint">Enter to send</span>
               <button type="button" class="send" [class.is-ready]="canSend() && !noneLeft()" (click)="send()" [disabled]="!canSend() || noneLeft()" aria-label="Send">
@@ -309,7 +309,7 @@
                 <span class="dots small" aria-label="Preparing download"><i></i><i></i><i></i></span>
               }
               @if (usesImages(email)) {
-                <p class="more-note">Download HTML hosts the images with TODD for 30 days, so it works pasted into any email tool.</p>
+                <p class="more-note">Download HTML hosts the images with 16Ahead for 30 days, so it works pasted into any email tool.</p>
                 <div class="more-row">
                   <button type="button" class="pill pill--bg" (click)="downloadZip(email)" [disabled]="!!exporting()">Download .zip <small>HTML plus an images folder</small></button>
                   <button type="button" class="pill pill--bg" (click)="downloadSingleFile(email)" [disabled]="!!exporting()">Single file <small>Images built in</small></button>
@@ -335,7 +335,7 @@
               </div>
               @if (sendPanel(); as panel) {
                 @if (panel.emailId === email.id) {
-                  <div class="send-panel">
+                  <div class="send-panel" #sendPanelEl>
                     @if (panel.canSend === null && panel.working) {
                       <span class="dots small" aria-label="Checking"><i></i><i></i><i></i></span>
                     } @else if (panel.canSend === false) {
@@ -375,6 +375,6 @@
   }
 
   @if (dragging()) {
-    <div class="drop-overlay"><div>Drop images for TODD to use</div></div>
+    <div class="drop-overlay"><div>Drop images for 16Ahead to use</div></div>
   }
 </div>

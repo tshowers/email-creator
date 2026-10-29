@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { getAuth, onAuthStateChanged, signInWithCustomToken, signOut, User } from 'firebase/auth';
 import { environment } from '../../environments/environment';
+import { hostedLoginUrl } from '@taliferro/ui/platform/hosted-login.model';
 
 /**
  * Cypress only (cypress/support/e2e.ts): a stand-in signed-in user, so the
@@ -47,7 +48,7 @@ export class AuthService {
     sessionStorage.setItem( this.pendingLoginStorageKey, JSON.stringify( { state, returnUrl } ) );
     const isLocal = [ 'localhost', '127.0.0.1' ].includes( window.location.hostname );
     const client = isLocal ? 'email-creator-web-local' : 'email-creator-web';
-    window.location.href = `https://todd.taliferro.tech/login?client=${ client }&state=${ state }`;
+    window.location.href = hostedLoginUrl( client, state );
   }
 
   consumePendingLogin ( state: string | null ): { returnUrl?: string } | null {

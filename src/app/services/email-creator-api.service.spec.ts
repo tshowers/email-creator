@@ -152,7 +152,7 @@ describe( 'EmailCreatorApiService', () => {
       const result = api.getUsage();
       ( await expectRequest( 'GET', 'usage' ) ).error( new ProgressEvent( 'error' ), { status: 0 } );
       await expectAsync( result ).toBeRejectedWith( jasmine.objectContaining( {
-        message: 'Could not reach TODD. Check your connection and try again.',
+        message: 'Could not reach 16Ahead. Check your connection and try again.',
         status: 0,
       } ) );
     } );
