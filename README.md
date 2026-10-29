@@ -1,6 +1,6 @@
-# TODD Email Creator
+# 16Ahead Email Creator
 
-A single-page workspace where a signed-in TODD user chats with TODD about an
+A single-page workspace where a signed-in 16Ahead user chats with 16Ahead about an
 email (a marketing campaign, newsletter, invite, or a plain business email),
 optionally attaches images (a logo, product photos), and gets a designed,
 email-safe HTML email to preview and download.
@@ -8,7 +8,7 @@ email-safe HTML email to preview and download.
 - **Nothing is stored by default.** The conversation, uploads, and emails
   live only in the browser tab. Refreshing or leaving clears them (the page
   warns first if there are emails).
-- **TODD login required.** Sign-in uses TODD's hosted login
+- **16Ahead login required.** Sign-in uses 16Ahead's hosted login
   (`todd.taliferro.tech/login?client=email-creator-web`).
 - **10 free emails per user per day**, reset at midnight Pacific time. After
   that, users can buy a 5-email credit pack (Stripe Checkout); credits don't
@@ -20,7 +20,7 @@ Emails that use attached images offer three downloads:
 
 | Option | What you get | Stored? |
 |---|---|---|
-| Download HTML | Image `src`s point to TODD-hosted copies. Works pasted into any email tool. | Images kept in Firebase Storage for **30 days**, then deleted |
+| Download HTML | Image `src`s point to 16Ahead-hosted copies. Works pasted into any email tool. | Images kept in Firebase Storage for **30 days**, then deleted |
 | Download .zip | `email.html` + `images/` folder, for uploading to Mailchimp, Constant Contact, etc. | No |
 | Download single file | Images embedded as data URLs. Easy to open/share; many inboxes block these images. | No |
 
@@ -81,7 +81,7 @@ A tenant can override the two daily limits with `emailCreatorDailyLimit` and
   ```
 
   `npm install` fails without it.
-- **A TODD account** to sign in with. Chat and generate go to the production
+- **A 16Ahead account** to sign in with. Chat and generate go to the production
   API, so there is no local backend to run.
 - For deploys only: the Firebase CLI (`npm i -g firebase-tools`), logged in
   with access to the `taliferrotech` project.
@@ -93,7 +93,7 @@ There are no `.env` files. Everything the browser needs is in
 
 | Key | Value | |
 |---|---|---|
-| `PLATFORM_URL` | `https://emails.taliferro.tech` | Public site URL |
+| `PLATFORM_URL` | `https://emails.16ahead.com` | Public site URL |
 | `backendURL` | `https://api.taliferro.tech/api` | todd-backend; used in dev too |
 | `firebaseConfig` | `taliferrotech` web app | Public by design; Auth and the backend enforce access |
 
@@ -148,7 +148,7 @@ Cypress and the typecheck, commits any pending changes as
 GitHub afterward with `git push`.
 
 The site is the Firebase Hosting site `todd-email-creator` at
-`https://emails.taliferro.tech`. Prerendered pages are served as files; any
+`https://emails.16ahead.com`. Prerendered pages are served as files; any
 other path falls back to `index.csr.html`.
 
 Backend (from `todd-backend`):
