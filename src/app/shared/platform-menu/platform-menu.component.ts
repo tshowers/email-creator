@@ -109,6 +109,11 @@ export class PlatformMenuComponent {
   get secondaryItems (): MenuLink[] { return ( this.config.secondaryItems || [] ).filter( ( item ) => menuMatches( this.query, item.label, item.keywords ) ); }
   get visibleProducts (): MenuProduct[] { return this.products.filter( ( product ) => menuMatches( this.query, product.label ) ); }
   get visibleAccount (): MenuLink[] { return this.accountLinks.filter( ( item ) => menuMatches( this.query, item.label, item.keywords ) ); }
+  /** Apps without accounts (config.noSignIn) show no Account card while signed out. */
+  get hasAccountCard (): boolean {
+    return this.isLoggedIn || !this.config.noSignIn;
+  }
+
   get hasAppColumn (): boolean {
     return ( this.section?.items || this.config.items ).length > 0 || !!this.config.secondaryItems?.length || this.adminItems.length > 0;
   }

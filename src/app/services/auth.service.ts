@@ -40,10 +40,11 @@ export class AuthService {
 
   /**
    * `state` is stashed with the return URL before leaving and checked again
-   * in AuthCallbackComponent - a CSRF guard against a forged callback. The
-   * query is kept so a link like ?mayaEmail=<id> still opens after sign-in.
+   * in AuthCallbackComponent - a CSRF guard against a forged callback. It
+   * comes back to the page you're on, query included, so a link like
+   * ?mayaEmail=<id> still opens after sign-in.
    */
-  signIn ( returnUrl = `/${ window.location.search }` ): void {
+  signIn ( returnUrl = `${ window.location.pathname }${ window.location.search }` ): void {
     const state = crypto.randomUUID();
     sessionStorage.setItem( this.pendingLoginStorageKey, JSON.stringify( { state, returnUrl } ) );
     const isLocal = [ 'localhost', '127.0.0.1' ].includes( window.location.hostname );
