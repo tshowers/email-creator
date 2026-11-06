@@ -38,3 +38,14 @@ echo "Deploying Email Creator to Firebase Hosting site todd-email-creator..."
 firebase deploy --project taliferrotech --only hosting:todd-email-creator
 
 echo "Email Creator hosting deploy complete."
+
+# The deploy is already live at this point, so a push failure should warn
+# rather than trip the ERR trap's "nothing was deployed" message.
+trap - ERR
+echo "Pushing to GitHub..."
+if git push origin HEAD; then
+  echo "GitHub push complete."
+else
+  echo "Warning: deploy succeeded but git push failed - run 'git push' manually." >&2
+  exit 1
+fi

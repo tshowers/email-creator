@@ -29,6 +29,14 @@ describe( 'maya utils', () => {
     } );
   } );
 
+  describe( 'mayaCopyMessage with images', () => {
+    it( 'names the images attached to the request so the designer uses them', () => {
+      expect( mayaCopyMessage( { subject: '', body: 'Body.' }, [ { id: 'u1', name: 'find-result.png' }, { id: 'u2' } ] ) ).toBe(
+        'The Marketing Assistant wrote this copy. Design the email using it as written:\n\nBody.\n\nUse the images attached to the request above, the way the user described them there: u1 ("find-result.png"), u2.',
+      );
+    } );
+  } );
+
   describe( 'dataUrlToFile', () => {
     it( 'keeps the type, name and bytes', async () => {
       const file = dataUrlToFile( 'data:image/png;base64,SGk=', 'logo.png' );

@@ -7,9 +7,12 @@ export const MAYA_PRICING_URL = 'https://marketing.16ahead.com/pricing';
 
 /**
  * Maya's copy as the chat message TODD reads: it says the words are final,
- * so TODD designs them instead of asking questions or rewriting them.
+ * so TODD designs them instead of asking questions or rewriting them. The
+ * images attached to the request are named again: without that, TODD
+ * designed a Find email with a "screenshot preview area" box instead of the
+ * screenshot (2026-11-02).
  */
-export function mayaCopyMessage ( copy: MayaCopy ): string {
+export function mayaCopyMessage ( copy: MayaCopy, images: { id: string; name?: string }[] = [] ): string {
   const lines = [ 'The Marketing Assistant wrote this copy. Design the email using it as written:', '' ];
   if ( copy.subject ) lines.push( `Subject: ${ copy.subject }`, '' );
   lines.push( copy.body );
@@ -18,6 +21,10 @@ export function mayaCopyMessage ( copy: MayaCopy ): string {
   }
   if ( copy.audience ) lines.push( `Audience: ${ copy.audience }` );
   if ( copy.tone ) lines.push( `Tone: ${ copy.tone }` );
+  if ( images.length ) {
+    const list = images.map( ( image ) => image.name ? `${ image.id } ("${ image.name }")` : image.id ).join( ', ' );
+    lines.push( '', `Use the images attached to the request above, the way the user described them there: ${ list }.` );
+  }
   return lines.join( '\n' );
 }
 

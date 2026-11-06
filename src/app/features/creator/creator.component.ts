@@ -353,11 +353,12 @@ export class CreatorComponent {
    */
   async askMaya (): Promise<void> {
     if ( !this.canSendToMaya() ) return;
+    const attached = this.attachments().map( ( image ) => ( { id: image.id, name: image.name } ) );
     const request = this.postDraft();
     this.thinking.set( true );
     try {
       const { copy, reply } = await this.api.mayaCopy( request );
-      this.messages.update( ( list ) => [ ...list, { role: 'user', text: mayaCopyMessage( copy ), images: [], maya: { reply, copy } } ] );
+      this.messages.update( ( list ) => [ ...list, { role: 'user', text: mayaCopyMessage( copy, attached ), images: [], maya: { reply, copy } } ] );
       track( 'maya_copy_written' );
     } catch ( error ) {
       this.thinking.set( false );
