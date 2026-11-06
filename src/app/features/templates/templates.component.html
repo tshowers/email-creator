@@ -1,0 +1,197 @@
+<!-- Email templates (design_handoff_16ahead_email_templates mockups 01-02) -->
+<div class="page">
+  <header class="topbar">
+    <a class="brand" routerLink="/">
+      <span class="brand-mark"><img class="brand-mark--light" src="assets/brand/products/svg/light/13-email-creator.svg" alt="" /><img class="brand-mark--dark" src="assets/brand/products/svg/dark/13-email-creator.svg" alt="" /></span>
+      <span class="brand-name"><span>16Ahead </span><span class="brand-product">Email Creator</span></span>
+    </a>
+    <div class="topbar-actions">
+      @if (usage(); as u) {
+        <span class="usage" title="Free emails reset at midnight Pacific time.">{{ u.remaining }} of {{ u.limit }} free left today</span>
+      }
+      <a class="pill" routerLink="/" data-cy="back-to-chat">Describe one instead</a>
+      <app-platform-menu [isLoggedIn]="!!auth.user()" [userName]="auth.user()?.displayName || ''" [userEmail]="auth.user()?.email || ''" (signIn)="auth.signIn()" (signOut)="auth.signOut()" />
+    </div>
+  </header>
+
+  @if (auth.user() === undefined) {
+    <div class="center"><span class="dots"><i></i><i></i><i></i></span></div>
+  } @else if (!auth.user()) {
+    <div class="center">
+      <p>Sign in to use your templates.</p>
+      <button type="button" class="primary" (click)="auth.signIn()">Sign in with 16Ahead</button>
+    </div>
+  } @else if (loadError()) {
+    <div class="center"><p class="error">{{ loadError() }}</p></div>
+  } @else if (!catalog()) {
+    <div class="center"><span class="dots"><i></i><i></i><i></i></span></div>
+  } @else {
+    @if (template(); as t) {
+      <div class="editor">
+        <!-- Left: the words -->
+        <section class="form" data-cy="template-editor">
+          <div class="form-head">
+            <h1>{{ t.name }}</h1>
+            <button type="button" class="link" (click)="pickerOpen.set(true)" data-cy="change-template">Change template</button>
+          </div>
+
+          <div class="form-body">
+            @if (problems().length) {
+              <div class="banner" data-cy="brand-problems">
+                @for (p of problems(); track p.field) { <p>{{ p.message }}</p> }
+                <a [href]="profileUrl" target="_blank" rel="noopener">Open your profile</a>
+              </div>
+            }
+
+            <div class="ask">
+              <label for="ask">What's this email about?</label>
+              <textarea id="ask" rows="2" [value]="ask()" (input)="setAsk($event)" [placeholder]="askPlaceholder()" data-cy="template-ask"></textarea>
+              <div class="ask-row">
+                <button type="button" class="primary small" (click)="write()" [disabled]="!canWrite()" data-cy="template-write">
+                  @if (writing()) { Writing… } @else { Write it for me }
+                </button>
+                <span class="hint">Uses one of today's emails. Facts only you know stay blank for you.</span>
+              </div>
+              @if (writerNote()) { <p class="writer-note" data-cy="writer-note">{{ writerNote() }}</p> }
+            </div>
+
+            <label class="cap" for="f-subject">Subject</label>
+            <input id="f-subject" class="input" [class.needed]="subjectNeeded()" [value]="subject()" (input)="setField('email.subject', $event)" data-cy="field-email.subject" />
+            <label class="cap" for="f-preheader">Preview text</label>
+            <input id="f-preheader" class="input" [class.needed]="preheaderNeeded()" [value]="preheader()" (input)="setField('email.preheader', $event)" data-cy="field-email.preheader" />
+
+            @for (g of alwaysGroups(); track g.id) {
+              <h2 class="cap group-label">{{ g.label }}</h2>
+              <div class="fields">
+                @for (f of g.fields; track f.key) {
+                  <ng-container *ngTemplateOutlet="field; context: { $implicit: f }" />
+                }
+              </div>
+            }
+
+            @if (optionalGroups().length) {
+              <h2 class="cap group-label">Sections</h2>
+              @for (g of optionalGroups(); track g.id) {
+                <div class="section" [class.off]="!g.on" [class.open]="g.open">
+                  <div class="section-row">
+                    <button type="button" class="section-name" (click)="editSection(g.id)" [disabled]="!g.fields.length" [attr.aria-expanded]="g.open" [attr.data-cy]="'section-' + g.id">
+                      {{ g.label }}@if (!g.on) { <span class="muted"> · hidden</span> }
+                      @if (g.open) { <span class="editing">Editing</span> }
+                    </button>
+                    <button type="button" class="switch" role="switch" [attr.aria-checked]="g.on" [attr.aria-label]="'Show ' + g.label" (click)="toggleSection(g.id)" [attr.data-cy]="'toggle-' + g.id"><span></span></button>
+                  </div>
+                  @if (g.note && g.on) { <p class="section-note">{{ g.note }}</p> }
+                  @if (g.open) {
+                    <div class="fields">
+                      @for (f of g.fields; track f.key) {
+                        <ng-container *ngTemplateOutlet="field; context: { $implicit: f }" />
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            }
+          </div>
+
+          <ng-template #field let-f>
+            <div class="field" [class.wide]="f.type === 'textarea'">
+              <label class="field-label" [for]="'f-' + f.key">{{ f.label }}@if (f.needed) { <span class="need">Add this</span> }</label>
+              @switch (f.type) {
+                @case ('textarea') {
+                  <textarea [id]="'f-' + f.key" class="input" rows="4" [class.needed]="f.needed" [value]="f.value" [placeholder]="f.placeholder" (input)="setField(f.key, $event)" [attr.data-cy]="'field-' + f.key"></textarea>
+                }
+                @case ('image') {
+                  <div class="image-field">
+                    @if (f.value) {
+                      <img [src]="f.value" alt="" />
+                      <button type="button" class="pill small" (click)="imageInput.click()" [disabled]="uploading() === f.key">Replace</button>
+                      <button type="button" class="link" (click)="removeImage(f.key)">Remove</button>
+                    } @else {
+                      <button type="button" class="pill small" (click)="imageInput.click()" [disabled]="uploading() === f.key" [attr.data-cy]="'upload-' + f.key">
+                        @if (uploading() === f.key) { Uploading… } @else { Add a picture }
+                      </button>
+                    }
+                    <input #imageInput type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden (change)="uploadImage(f.key, imageInput)" />
+                  </div>
+                }
+                @default {
+                  <input [id]="'f-' + f.key" class="input" [type]="f.type === 'url' ? 'url' : 'text'" [class.needed]="f.needed" [value]="f.value" [placeholder]="f.placeholder" (input)="setField(f.key, $event)" [attr.data-cy]="'field-' + f.key" />
+                }
+              }
+            </div>
+          </ng-template>
+
+          <footer class="form-foot">
+            @if (error()) { <p class="error" role="alert" data-cy="template-error">{{ error() }}</p> }
+            @if (notice()) { <p class="notice" role="status" data-cy="template-notice">{{ notice() }}</p> }
+            <div class="actions">
+              <button type="button" class="pill" (click)="sendTest()" [disabled]="busy()" data-cy="template-test">@if (testing()) { Sending… } @else { Send test }</button>
+              <button type="button" class="pill" (click)="save()" [disabled]="busy()" data-cy="template-save">@if (saving()) { Saving… } @else { {{ documentId() ? 'Save' : 'Save to Docs' }} }</button>
+              <button type="button" class="primary" (click)="openSend()" [disabled]="busy()" data-cy="template-next">Next: choose recipients</button>
+            </div>
+          </footer>
+        </section>
+
+        <!-- Right: the email as it will look -->
+        <section class="preview">
+          <div class="preview-head">
+            <div class="seg" role="tablist">
+              <button type="button" role="tab" [class.on]="previewWidth() === 'desktop'" (click)="previewWidth.set('desktop')">Desktop</button>
+              <button type="button" role="tab" [class.on]="previewWidth() === 'mobile'" (click)="previewWidth.set('mobile')">Mobile</button>
+            </div>
+            @if (brandName()) { <span class="muted">Brand: {{ brandName() }}</span> }
+          </div>
+          @for (w of warnings(); track w) { <p class="warning">{{ w }}</p> }
+          <div class="frame-wrap" [class.mobile]="previewWidth() === 'mobile'">
+            @if (previewHtml(); as html) {
+              <iframe [srcdoc]="html" title="Email preview" sandbox="allow-popups" data-cy="template-preview"></iframe>
+            } @else {
+              <div class="center"><span class="dots"><i></i><i></i><i></i></span></div>
+            }
+          </div>
+        </section>
+      </div>
+
+      @if (send(); as s) {
+        <div class="overlay" (click)="closeSend()">
+          <section class="sheet" role="dialog" aria-labelledby="send-title" (click)="$event.stopPropagation()" data-cy="template-send">
+            <div class="sheet-head">
+              <h2 id="send-title">Who gets it?</h2>
+              <button type="button" class="close" (click)="closeSend()" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
+            </div>
+            <div class="targets">
+              @for (target of targets; track target.id) {
+                <button type="button" class="target" [class.on]="s.target === target.id" (click)="pickTarget(target.id)" [disabled]="s.working" [attr.data-cy]="'target-' + target.id">
+                  <b>{{ target.label }}</b><span>{{ target.detail }}</span>
+                </button>
+              }
+            </div>
+            @if (s.checking) { <p class="muted">Checking the email…</p> }
+            @if (s.error) { <p class="error">{{ s.error }}</p> }
+            @if (s.canSend === false) {
+              <p>Sending goes through Outreach, which this workspace doesn't have yet.</p>
+              <a class="primary" [href]="pricingUrl" target="_blank" rel="noopener">See Outreach plans</a>
+            }
+            @if (s.canSend === true) {
+              @for (fill of s.fillIns; track fill.token) {
+                <label class="field-label" [for]="'fill-' + fill.token">{{ fill.label }}</label>
+                <input [id]="'fill-' + fill.token" class="input" [value]="s.values[fill.token] || ''" (input)="setFill(fill.token, $event)" />
+              }
+              @if (s.openUrl) {
+                <a class="primary" [href]="s.openUrl" target="_blank" rel="noopener" data-cy="template-open-outreach">Open in Outreach</a>
+              } @else {
+                <button type="button" class="primary" (click)="handOff()" [disabled]="!sendReady() || s.working" data-cy="template-handoff">@if (s.working) { Preparing… } @else { Continue in Outreach }</button>
+              }
+            }
+          </section>
+        </div>
+      }
+    }
+
+    @if (showPicker()) {
+      <div class="overlay" [class.solid]="!templateId()">
+        <app-template-picker class="picker" [catalog]="catalog()!" [current]="templateId()" (chosen)="choose($event)" (blank)="blank()" (closed)="closePicker()" />
+      </div>
+    }
+  }
+</div>

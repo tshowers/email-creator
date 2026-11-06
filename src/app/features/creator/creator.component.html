@@ -22,6 +22,7 @@
             <button type="button" class="pill pill-buy" (click)="buyMore(hostingPack())" [disabled]="buying() === 'starting'" data-cy="buy-hosting-credits">Buy more hosted images</button>
           }
         }
+        <a class="pill" routerLink="/templates" data-cy="topbar-templates">Templates</a>
         @if (messages().length) {
           <button type="button" class="pill" (click)="startOver()" [disabled]="busy()">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg><span class="long">New email</span>
@@ -80,6 +81,10 @@
                 <span class="intro-mark"><span class="um-glyph" data-key="email-creator"></span></span>
                 <h1>What email should we create?</h1>
                 <p>Tell 16Ahead about the email you need. Attach your logo or any images to include.</p>
+                <a class="pill template-link" routerLink="/templates" data-cy="open-templates">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5" /><rect x="13" y="4" width="7" height="7" rx="1.5" /><rect x="4" y="13" width="7" height="7" rx="1.5" /><rect x="13" y="13" width="7" height="7" rx="1.5" /></svg>
+                  Or start from a template
+                </a>
                 <span class="label">Try one</span>
                 <div class="suggestions">
                   @for (suggestion of suggestions; track suggestion) {

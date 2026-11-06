@@ -7,6 +7,14 @@ export const routes: Routes = [
     loadComponent: () => import( './features/creator/creator.component' ).then( ( m ) => m.CreatorComponent ),
   },
   {
+    path: 'templates',
+    loadComponent: () => import( './features/templates/templates.component' ).then( ( m ) => m.TemplatesComponent ),
+  },
+  {
+    path: 'templates/:id',
+    loadComponent: () => import( './features/templates/templates.component' ).then( ( m ) => m.TemplatesComponent ),
+  },
+  {
     path: 'auth/callback',
     loadComponent: () =>
       import( './features/auth-callback/auth-callback.component' ).then( ( m ) => m.AuthCallbackComponent ),

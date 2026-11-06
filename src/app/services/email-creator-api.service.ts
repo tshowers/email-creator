@@ -109,6 +109,38 @@ export interface HandoffRequest {
   fills: Record<string, string>;
 }
 
+// ---- Email templates (Claude Design handoff, 2026-11-05) ----
+
+export type TemplateFieldType = 'text' | 'textarea' | 'url' | 'image';
+export interface TemplateField { key: string; label: string; type: TemplateFieldType }
+/** A group of always-shown fields, or an optional section the person can switch off. */
+export interface TemplateGroup { id: string; label: string; optional: boolean; fields: TemplateField[] }
+export interface EmailTemplate {
+  id: string;
+  name: string;
+  description: string;
+  category: 'marketing' | 'events' | 'personal';
+  groups: TemplateGroup[];
+  sections: TemplateGroup[];
+  fields: string[];
+  /** Example words (another business's), shown until the person writes their own. */
+  starter: Record<string, string>;
+}
+export interface TemplateBrand { name: string; color: string; originalColor?: string; colorAdjusted?: boolean; logo_url: string; website: string; address: string; font: string }
+export interface TemplateSender { name: string; title: string; email: string; phone: string; photo_url: string }
+export interface TemplateCatalog {
+  templates: EmailTemplate[];
+  brand: TemplateBrand;
+  sender: TemplateSender;
+  /** What stops this brand from sending (no address, no name), with what to do. */
+  problems: { field: string; message: string }[];
+  defaultTemplate: string;
+}
+export interface TemplateState { templateId: string; content: Record<string, string>; hidden: string[] }
+export interface RenderedTemplate { html: string; text: string; subject: string; preheader: string; warnings: string[]; removedSections: string[]; missing: string[]; bytes: number }
+export interface WrittenTemplate { content: Record<string, string>; needs: string[]; reply: string; usage: Usage }
+export interface SavedTemplate extends TemplateState { documentId: string; title: string }
+
 @Injectable( { providedIn: 'root' } )
 export class EmailCreatorApiService {
   private readonly http = inject( HttpClient );
@@ -155,6 +187,40 @@ export class EmailCreatorApiService {
   /** Hands the finished email to Catalyst (many) or the Email Composer (one). */
   handoff ( request: HandoffRequest ): Promise<{ id: string; url: string }> {
     return this.request<{ id: string; url: string }>( 'POST', 'handoff', request );
+  }
+
+  /** The five templates, with this person's brand and what (if anything) stops it sending. */
+  getTemplates (): Promise<TemplateCatalog> {
+    return this.request<TemplateCatalog>( 'GET', 'templates' );
+  }
+
+  /** The email as it will look. `strict` refuses while a blank is left or the brand can't be sent. */
+  renderTemplate ( state: TemplateState, options: { sample?: boolean; strict?: boolean } = {} ): Promise<RenderedTemplate> {
+    return this.request<RenderedTemplate>( 'POST', 'templates/render', { ...state, ...options } );
+  }
+
+  /** The AI writes the template's words for this business. One of the day's emails. */
+  writeTemplate ( templateId: string, ask: string, hidden: string[] ): Promise<WrittenTemplate> {
+    return this.request<WrittenTemplate>( 'POST', 'templates/write', { templateId, ask, hidden } );
+  }
+
+  /** Keeps a picture in the workspace's Docs library and returns its lasting address. */
+  uploadTemplateImage ( dataUrl: string, alt: string ): Promise<{ url: string; documentId: string }> {
+    return this.request<{ url: string; documentId: string }>( 'POST', 'templates/image', { dataUrl, alt } );
+  }
+
+  /** Saves to Docs, or updates the doc it was opened from. */
+  saveTemplate ( state: TemplateState, documentId = '' ): Promise<{ documentId: string; title: string }> {
+    return this.request<{ documentId: string; title: string }>( 'POST', 'templates/save', { ...state, documentId } );
+  }
+
+  openSavedTemplate ( documentId: string ): Promise<SavedTemplate> {
+    return this.request<SavedTemplate>( 'GET', `templates/saved/${ encodeURIComponent( documentId ) }` );
+  }
+
+  /** The finished email to the signed-in person only, marked [TEST]. Needs Outreach. */
+  sendTemplateTest ( state: TemplateState ): Promise<unknown> {
+    return this.request<unknown>( 'POST', 'templates/send-test', state );
   }
 
   /**

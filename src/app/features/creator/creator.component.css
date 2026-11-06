@@ -232,3 +232,6 @@ button.dismiss { padding: 2px 8px; border: 0; background: transparent; color: va
   .panel { margin: 0 12px 16px; padding: 12px; }
   .send-choices { grid-template-columns: 1fr; }
 }
+
+/* "Or start from a template" (2026-11-05) */
+.template-link { margin: 4px 0 18px; }
